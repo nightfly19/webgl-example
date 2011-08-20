@@ -100,7 +100,7 @@ Mine.Shader.Fragment.Simple = function(){
     precision highp float; \n\
     #endif \n\
     void main(void) { \
-      gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0); \
+      gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); \
     }";
 
   return shader;
@@ -158,36 +158,7 @@ Mine.Shader_program = function(){
   program.add_shader = function(new_shader){
     var gl = Mine.THE_ONE_GL_STAGE.gl;
 
-    //backup the current working program and create a new one.
-    var old_program = program.program;
-    program.init();
-
-    //Add all the confirmed working shaders to the new program.
-    for(shader in program.shaders){
-      gl.attachShader(program.program, program.shaders[shader].shader);
-    }
-
-    //Add the new shader to the new program.
     gl.attachShader(program.program, new_shader.shader);
-
-    if(! program.link()){
-      console.log("Failed to link new program");
-      program.program = old_program;
-      gl.useProgram(program.program);
-    }
-
-    //It worked, lets use it.
-    else{
-      gl.useProgram(program.program);
-    }
-
-      program.program.vertexPositionAttribute = gl.getAttribLocation(program.program, "aVertexPosition");
-      console.log(program);
-      console.log(program.program);
-      console.log(program.program.vertexPositionAttribute);
-      gl.enableVertexAttribArray(program.program.vertexPositionAttribute);
-      program.program.pMatrixUniform = gl.getUniformLocation(program.program,"uPMatrix");
-      program.program.mvMatrixUniform = gl.getUniformLocation(program.program,"uMVMatrix");
 
   };
 
@@ -203,6 +174,15 @@ Mine.Shader_program = function(){
       return false;
     }
     else{
+      console.log("program linked!!!");
+      gl.useProgram(program.program);
+      program.program.vertexPositionAttribute = gl.getAttribLocation(program.program, "aVertexPosition");
+      //console.log("aVertexPosition: "+program.program.vertexPositionAttribute);
+      gl.enableVertexAttribArray(program.program.vertexPositionAttribute);
+      program.program.pMatrixUniform = gl.getUniformLocation(program.program,"uPMatrix");
+      //console.log(program.program.pMatrixUniform);
+      program.program.mvMatrixUniform = gl.getUniformLocation(program.program,"uMVMatrix");
+      //console.log(program.program.mvMatrixUniform);
       return true;
     }
   };
@@ -250,7 +230,7 @@ Mine.GL_stage = function(id){
   if(gl_stage.gl){
     //gl_stage.clear();
     gl_stage.gl.viewportWidth = gl_stage.canvas.width;
-    gl_stage.gl.viewportheight = gl_stage.canvas.height;
+    gl_stage.gl.viewportHeight = gl_stage.canvas.height;
   }
   else{
     console.log("Failed somehow");
@@ -278,6 +258,7 @@ $(document).ready(function(){
   Mine.shader_program.init();
   Mine.shader_program.add_shader(Mine.Shader.Fragment.Simple);
   Mine.shader_program.add_shader(Mine.Shader.Vertex.Simple);
+  Mine.shader_program.link();
 
   //Strictly following the tutorial below.
   var gl = Mine.THE_ONE_GL_STAGE.gl;
@@ -312,13 +293,12 @@ $(document).ready(function(){
     console.log("The fucker should be drawn here...");
     gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    
     mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
     mat4.identity(mvMatrix);
 
-    mat4.translate(mvMatrix, [-1.5, 0.0, -7.0]);
+    mat4.translate(mvMatrix, [0.0, 0.0, -5]);
     gl.bindBuffer(gl.ARRAY_BUFFER, triangleDotsBuffer);
-    console.log(triangleDotsBuffer);
+    //console.log(triangleDotsBuffer);
 
     gl.vertexAttribPointer(Mine.shader_program.program.vertexPositionAttribute, triangleDotsBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
@@ -326,17 +306,8 @@ $(document).ready(function(){
 
     gl.drawArrays(gl.TRIANGLES, 0, triangleDotsBuffer.numItems);
     console.log("It should have drawn...");
-
-    //Time for the square.
-    
-    //mat4.translate(mvMatrix, [3.0, 0.0, 0.0]);
-    //gl.bindBuffer(gl.ARRAY_BUFFER, squareDotsBuffer);
-    //gl.vertexAttribPointer(Mine.shader_program.program.vertexPositionAttribute, squareDotsBuffer.itemSize, gl.FLOAT, false, 0, 0);
-    //setMatrixUniforms();
-    //gl.drawArrays(gl.TRIANGLE_STRIP, 0, squareDotsBuffer.numItems);
   }
 
-  //Will it work?
   initBuffers();
 
   gl.clearColor(0.0, 1.0, 0.0, 1.0);
