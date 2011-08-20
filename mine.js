@@ -99,8 +99,11 @@ Mine.Shader.Fragment.Simple = function(){
     #ifdef GL_ES \n\
     precision highp float; \n\
     #endif \n\
+    \
+    varying vec4 vColor;\
+    \
     void main(void) { \
-      gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); \
+      gl_FragColor = vColor; \
     }";
 
   return shader;
@@ -126,12 +129,16 @@ Mine.Shader.Vertex.Simple = function(){
   var shader = Mine.Shader.Vertex();
   shader.source = "\
     attribute vec3 aVertexPosition;\
+    attribute vec4 aVertexColor;\
     \
     uniform mat4 uMVMatrix;\
     uniform mat4 uPMatrix;\
     \
+    varying vec4 vColor;\
+    \
     void main(void) {\
       gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);\
+      vColor = aVertexColor;\
     }\
   ";
 
@@ -176,13 +183,18 @@ Mine.Shader_program = function(){
     else{
       console.log("program linked!!!");
       gl.useProgram(program.program);
+
+      //Vertex position.
       program.program.vertexPositionAttribute = gl.getAttribLocation(program.program, "aVertexPosition");
-      //console.log("aVertexPosition: "+program.program.vertexPositionAttribute);
       gl.enableVertexAttribArray(program.program.vertexPositionAttribute);
+
+      //Vertex color.
+      program.program.vertexColorAttribute = gl.getAttribLocation(program.program, "aVertexColor");
+      gl.enableVertexAttribArray(program.program.vertexColorAttribute);
+
+
       program.program.pMatrixUniform = gl.getUniformLocation(program.program,"uPMatrix");
-      //console.log(program.program.pMatrixUniform);
       program.program.mvMatrixUniform = gl.getUniformLocation(program.program,"uMVMatrix");
-      //console.log(program.program.mvMatrixUniform);
       return true;
     }
   };
@@ -273,20 +285,33 @@ $(document).ready(function(){
   }
 
   var triangleDotsBuffer;
+  var triangleColorBuffer;
 
   function initBuffers(){
     console.log("Creating the fucking triangle");
     triangleDotsBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER,triangleDotsBuffer);
     var vertices = [
-         0.0,  1.0,  0.0,
-        -1.0, -1.0,  0.0,
+         0.0,  1.0,  -3.0,
+        -1.0, -1.0,  3.0,
          1.0, -1.0,  0.0
     ];
 
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
     triangleDotsBuffer.itemSize = 3;
     triangleDotsBuffer.numItems = 3;
+
+    triangleColorBuffer=  gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER,triangleColorBuffer);
+    var colors = [
+      1.0, 0.0, 0.0, 1.0,
+      0.0, 1.0, 1.0, 1.0,
+      0.0, 0.0, 0.0, 1.0
+    ];
+
+    gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(colors), gl.STATIC_DRAW);
+    triangleColorBuffer.itemSize = 4;
+    triangleColorBuffer.numItems = 3;
   }
 
   function drawScene(){
@@ -302,6 +327,8 @@ $(document).ready(function(){
 
     gl.vertexAttribPointer(Mine.shader_program.program.vertexPositionAttribute, triangleDotsBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
+    gl.bindBuffer(gl.ARRAY_BUFFER, triangleColorBuffer);
+    gl.vertexAttribPointer(Mine.shader_program.program.vertexColorAttribute, triangleColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
     setMatrixUniforms();
 
     gl.drawArrays(gl.TRIANGLES, 0, triangleDotsBuffer.numItems);
