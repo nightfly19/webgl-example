@@ -1,8 +1,11 @@
 var Mine = {};
 Mine.RESOURCE_LOCATION = "resources";
+
 //Base class begins here.
 Mine.Base = function(){
+
   var base = {}
+
   //Holds what classes the object is.
   base._classes = Array();
 
@@ -167,46 +170,97 @@ Mine.ShaderProgram = function(){
 //Begin primatives.
 Mine.Primatives = {};
 //False when a WebGL context hasn't been initialized.
-Mine.Primatives.ready = false;
-//To be ran when a WebGL context is initialized for the first time.
-Mine.Primatives.GlInit = function(){
-  if(!Mine.Primatives.ready){
-    var gl = Mine.THE_ONE_GL_STAGE;
-    Mine.Primatives.Types = {"TRIANGLE_STRIP":gl.TRIANGLE_STRIP,"tootsie":1};
-    console.log(Mine.Primatives.Types.felix)
-    Mine.Primatives.ready = true;
-  }
-}
+//Mine.Primatives.ready = false;
+Mine.Primatives.Types = ["TRIANGLE_STRIP"];
 Mine.Primatives.Primative = function(){
   var primative = Mine.Base();
   primative._add_class(Mine.Primatives.Primative);
   primative.vertices = [];
+  primative.type = null;
+  primative.vertices = [];
+  primative.vBuffer = Mine.gl.createBuffer();
   primative.vCount = 0;
   primative.vSize = 3;
-  primative.type = null;
-  primative.buffer = null;
+  primative.colors = false;
+  primative.cBuffer = Mine.gl.createBuffer();
+  primative.cCount = 0;
+  primative.cSize = 4;
+  primative.setColor = function(new_color){
+    if(!primative.colors){
+      primative.colors = Array(primative.cCount * primative.cSize);
+    }
+    for(var i = 0; i < primative.cCount * primative.cSize; i++){
+      primative.colors[i] = new_color[i%primative.cSize];
+    }
+    Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, primative.cBuffer);
+    console.log(primative.colors);
+    Mine.gl.bufferData(Mine.gl.ARRAY_BUFFER, new Float32Array(primative.colors), Mine.gl.STATIC_DRAW);
+  };
   return primative;
 };
 Mine.Primatives.Triangle = function(){
   var triangle = Mine.Primatives.Primative();
   triangle._add_class(Mine.Primatives.Triangle);
+  //Filling the vBuffer.
   triangle.vertices = [
-     0.0, 1.0, -3.0,
-    -1.0, -1.0, 3.0,
+     0.0, 1.0, 0.0,
+    -1.0, -1.0, 0.0,
      1.0, -1.0, 0.0
   ];
   triangle.vCount = 3;
-  //Creating and filling the buffer.
-  triangle.vBuffer = Mine.gl.createBuffer();
   Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER,triangle.vBuffer);
-  Mine.gl.bufferData(Mine.gl.ARRAY_BUFFER, new Float32Array(triangle.vertices), gl.STATIC_DRAW);
+  Mine.gl.bufferData(Mine.gl.ARRAY_BUFFER, new Float32Array(triangle.vertices), Mine.gl.STATIC_DRAW);
+  //Color the triangle.
+  triangle.cCount = triangle.vCount;
+  triangle.setColor([1.0, 0.0, 0.0, 1.0]);
+  console.log(triangle.colors);
+  console.log("I made a triangle.");
   return triangle;
+};
+Mine.Primatives.Square = function(){
+  var square = Mine.Primatives.Primative();
+  square._add_class(Mine.Primatives.Square);
+  square.vertices = [
+     1.0, 1.0, 0.0,
+    -1.0, 1.0, 0.0,
+     1.0, -1.0, 0.0,
+    -1.0, -1.0, 0.0
+  ];
+  square.vCount = 4;
+  //Creating and filling the buffer.
+  square.vBuffer = Mine.gl.createBuffer();
+  Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER,square.vBuffer);
+  Mine.gl.bufferData(Mine.gl.ARRAY_BUFFER, new Float32Array(square.vertices), Mine.gl.STATIC_DRAW);
+  console.log("I made a square.");
+  return square;
 };
 Mine.Primatives.Cube = function(){
   var cube = Mine.Primatives.Primative();
   primatives.add_class(Mine.Primatives.Cube);
   return cube;
 }
+Mine.Thing = function(){
+  var thing = Mine.Base();
+  thing._add_class(Mine.Thing);
+  thing.position = [0,0,0];
+  thing.rotation = [0,0,0];
+  thing.shape = null;
+  thing.movePos = function(movement){
+    for(i in thing.position){
+      thing.position[i] += movement[i];
+    }
+  };
+  thing.setPos = function(new_pos){
+    thing.position = new_pos;
+  };
+  thing.getPos = function(){
+    return thing.position;
+  };
+  thing.getRot = function(){
+    return thing.rotation;
+  };
+  return thing;
+};
 //Stage begins here.
 Mine.GL_stage = function(id){
   var gl_stage = Mine.Base();
@@ -220,15 +274,14 @@ Mine.GL_stage = function(id){
   //Get the canvas.
   gl_stage.canvas = document.getElementById(id);
   //Try and initialize WebGL.
-  try{
+  //try{
     gl_stage.gl = gl_stage.canvas.getContext("experimental-webgl");
     Mine.gl = gl_stage.gl;
-    Mine.Primatives.GlInit();
-  }
-  catch(e){
-    console.log("Failed to initialize webgl");
-    console.log(e)
-  }
+  //}
+  //catch(e){
+  //  console.log("Failed to initialize webgl");
+  //  console.log(e)
+  //}
   //Set the current shader program.
   gl_stage.setProgram = function(active_program){
     gl_stage.program = active_program.program;
@@ -254,6 +307,12 @@ Mine.GL_stage = function(id){
     gl_stage.gl.depthFunc(gl_stage.glLEQUAL);
     gl_stage.gl.clear(gl_stage.gl.COLOR_BUFFER_BIT|gl_stage.gl.DEPTH_BUFFER_BIT);
   };
+  gl_stage.draw = function(target){
+    if(target._is_a(Mine.Thing)){
+      console.log("Drawing a thing");
+    }
+  };
+  //Constructor stuff.
   if(gl_stage.gl){
     //gl_stage.clear();
     gl_stage.gl.viewportWidth = gl_stage.canvas.width;
@@ -272,47 +331,25 @@ $(document).ready(function(){
   var gl_stage = stage;
   var colored_shader = Mine.ShaderProgram("colored");
   //Strictly following the tutorial below.
-  var gl = Mine.THE_ONE_GL_STAGE.gl;
-  var triangleDotsBuffer;
-  var triangleColorBuffer;
-  function initBuffers(){
-    console.log("Creating the fucking triangle");
-    triangleDotsBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER,triangleDotsBuffer);
-    var vertices = [
-         0.0, 1.0, -3.0,
-        -1.0, -1.0, 3.0,
-         1.0, -1.0, 0.0
-    ];
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-    triangleDotsBuffer.itemSize = 3;
-    triangleDotsBuffer.numItems = 3;
-    triangleColorBuffer= gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER,triangleColorBuffer);
-    var colors = [
-      1.0, 0.0, 0.0, 1.0,
-      0.0, 1.0, 1.0, 1.0,
-      0.0, 0.0, 0.0, 1.0
-    ];
-    gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(colors), gl.STATIC_DRAW);
-    triangleColorBuffer.itemSize = 4;
-    triangleColorBuffer.numItems = 3;
-  }
+  var shape = Mine.Primatives.Triangle();
+  var gl = Mine.gl;
   function drawScene(z_position){
     gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     mat4.perspective(45, gl_stage.gl.viewportWidth / gl_stage.gl.viewportHeight, 0.1, 100.0, gl_stage.pMatrix);
     mat4.identity(gl_stage.mvMatrix);
     mat4.translate(gl_stage.mvMatrix, [0.0, 0.0, z_position]);
-    gl.bindBuffer(gl_stage.gl.ARRAY_BUFFER, triangleDotsBuffer);
-    gl.vertexAttribPointer(stage.program.vertexPositionAttribute, triangleDotsBuffer.itemSize, gl.FLOAT, false, 0, 0);
-    gl.bindBuffer(gl.ARRAY_BUFFER, triangleColorBuffer);
-    gl.vertexAttribPointer(stage.program.vertexColorAttribute, triangleColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    //Square vertex shit.
+    gl.bindBuffer(gl_stage.gl.ARRAY_BUFFER, shape.vBuffer);
+    gl.vertexAttribPointer(stage.program.vertexPositionAttribute, shape.vSize, gl.FLOAT, false, 0, 0);
+    //Square color shit.
+    gl.bindBuffer(gl.ARRAY_BUFFER, shape.cBuffer);
+    gl.vertexAttribPointer(stage.program.vertexColorAttribute, shape.cSize, gl.FLOAT, false, 0, 0);
     gl_stage.setUniforms();
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, triangleDotsBuffer.numItems);
+    //Draw the shape.
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, shape.vCount);
     console.log("It should have drawn...");
   }
-  initBuffers();
   var timer;
   timer = setInterval(function(){
     if(colored_shader.failed){

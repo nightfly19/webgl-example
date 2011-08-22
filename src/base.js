@@ -1,3 +1,6 @@
+#ifndef BASE_JS
+#define BASE_JS
+
 //Base class begins here.
 Mine.Base = function(){
 
@@ -32,3 +35,4 @@ Mine.Base = function(){
 }
 
 
+#endif

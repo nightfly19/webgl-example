@@ -15,15 +15,14 @@ Mine.GL_stage = function(id){
   gl_stage.canvas = document.getElementById(id);
 
   //Try and initialize WebGL.
-  try{
+  //try{
     gl_stage.gl = gl_stage.canvas.getContext("experimental-webgl");
     Mine.gl = gl_stage.gl;
-    Mine.Primatives.GlInit();
-  }
-  catch(e){
-    console.log("Failed to initialize webgl");
-    console.log(e)
-  }
+  //}
+  //catch(e){
+  //  console.log("Failed to initialize webgl");
+  //  console.log(e)
+  //}
 
 
 
@@ -64,6 +63,14 @@ Mine.GL_stage = function(id){
   };
 
 
+  gl_stage.draw = function(target){
+    if(target._is_a(Mine.Thing)){
+      console.log("Drawing a thing");
+    }
+  };
+
+
+  //Constructor stuff.
   if(gl_stage.gl){
     //gl_stage.clear();
     gl_stage.gl.viewportWidth = gl_stage.canvas.width;

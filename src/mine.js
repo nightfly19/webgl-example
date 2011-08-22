@@ -4,6 +4,7 @@ Mine.RESOURCE_LOCATION = "resources";
 #include "base.js"
 #include "shaders.js"
 #include "primatives.js"
+#include "thing.js"
 #include "stage.js"
 
 
@@ -17,40 +18,12 @@ $(document).ready(function(){
   var colored_shader = Mine.ShaderProgram("colored");
 
   //Strictly following the tutorial below.
-  var gl = Mine.THE_ONE_GL_STAGE.gl;
 
 
 
+  var shape = Mine.Primatives.Triangle();
+  var gl = Mine.gl;
 
-  var triangleDotsBuffer;
-  var triangleColorBuffer;
-
-  function initBuffers(){
-    console.log("Creating the fucking triangle");
-    triangleDotsBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER,triangleDotsBuffer);
-    var vertices = [
-         0.0,  1.0,  -3.0,
-        -1.0, -1.0,  3.0,
-         1.0, -1.0,  0.0
-    ];
-
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-    triangleDotsBuffer.itemSize = 3;
-    triangleDotsBuffer.numItems = 3;
-
-    triangleColorBuffer=  gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER,triangleColorBuffer);
-    var colors = [
-      1.0, 0.0, 0.0, 1.0,
-      0.0, 1.0, 1.0, 1.0,
-      0.0, 0.0, 0.0, 1.0
-    ];
-
-    gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(colors), gl.STATIC_DRAW);
-    triangleColorBuffer.itemSize = 4;
-    triangleColorBuffer.numItems = 3;
-  }
 
   function drawScene(z_position){
     gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
@@ -59,19 +32,22 @@ $(document).ready(function(){
     mat4.identity(gl_stage.mvMatrix);
 
     mat4.translate(gl_stage.mvMatrix, [0.0, 0.0, z_position]);
-    gl.bindBuffer(gl_stage.gl.ARRAY_BUFFER, triangleDotsBuffer);
 
-    gl.vertexAttribPointer(stage.program.vertexPositionAttribute, triangleDotsBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    //Square vertex shit.
+    gl.bindBuffer(gl_stage.gl.ARRAY_BUFFER, shape.vBuffer);
+    gl.vertexAttribPointer(stage.program.vertexPositionAttribute, shape.vSize, gl.FLOAT, false, 0, 0);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, triangleColorBuffer);
-    gl.vertexAttribPointer(stage.program.vertexColorAttribute, triangleColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    //Square color shit.
+    gl.bindBuffer(gl.ARRAY_BUFFER, shape.cBuffer);
+    gl.vertexAttribPointer(stage.program.vertexColorAttribute, shape.cSize, gl.FLOAT, false, 0, 0);
     gl_stage.setUniforms();
-
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, triangleDotsBuffer.numItems);
+  
+    //Draw the shape.
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, shape.vCount);
     console.log("It should have drawn...");
   }
 
-  initBuffers();
+
   var timer;
   timer = setInterval(function(){
     if(colored_shader.failed){
