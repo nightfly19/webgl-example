@@ -8,9 +8,12 @@ Mine.GL_stage = function(id){
   gl_stage.canvas = null;
   gl_stage.gl = null;
   gl_stage.program = null;
+  gl_stage.actors = [];
   gl_stage.mvMatrix = mat4.create();
   gl_stage.pMatrix = mat4.create();
   gl_stage.bgColor = Mine.Colors.black;
+  gl_stage.fps = 1000/30;
+  gl_stage.interval = null;
 
   //Get the canvas.
   gl_stage.canvas = document.getElementById(id);
@@ -73,7 +76,7 @@ Mine.GL_stage = function(id){
     //Reset the move matrix.
     mat4.identity(gl_stage.mvMatrix);
 
-    if(target._is_a(Mine.Thing)){
+    if(target && target._is_a(Mine.Thing)){
       //console.log("Drawing a thing");
       mat4.translate(gl_stage.mvMatrix, target.getPos());
 
@@ -109,6 +112,37 @@ Mine.GL_stage = function(id){
       }
     }
   };
+
+  gl_stage.add = function(new_actor){
+    gl_stage.actors.push(new_actor);
+    new_actor.stage = gl_stage;
+  }
+
+  gl_stage.run = function(){
+    if(gl_stage.interval){
+      return;
+    }
+
+    Mine.gl.clearColor(0.0, 1.0, 0.0, 1.0);
+    Mine.gl.enable(Mine.gl.DEPTH_TEST);
+    mat4.perspective(45, gl_stage.gl.viewportWidth / gl_stage.gl.viewportHeight, 0.1, 100.0, gl_stage.pMatrix);
+    gl_stage.interval = setInterval(function(){
+      gl_stage.clear();
+
+      for(actor in gl_stage.actors){
+        gl_stage.actors[actor].act();
+      }
+      for(actor in gl_stage.actors){
+        gl_stage.draw(gl_stage.actors[actor]);
+      }
+    },gl_stage.fps);
+
+  };
+
+  gl_stage.end = function(){
+    clearInterval(gl_stage.interval);
+    gl_stage.interval = null;
+  }
 
 
   //Constructor stuff.

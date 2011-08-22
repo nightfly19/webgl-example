@@ -6,7 +6,6 @@ Mine.ShaderProgram = function(shader_name){
   shader._add_class(Mine.ShaderProgram);
 
   var shader_location = Mine.RESOURCE_LOCATION+"/shaders/";
-  console.log("Loading shader: "+shader_name);
   shader.loaded = false;
   shader.failed = false;
   shader.program = null;
@@ -90,63 +89,21 @@ Mine.ShaderProgram = function(shader_name){
     }
   }
 
+  shader.waitFor = function(callback){
+    var timer = setInterval(function(){
+      if(shader.failed){
+        clearInterval(timer);
+        console.log("Shader failed to compile...");
+      }
+
+      if(shader.loaded){
+        clearInterval(timer);
+        callback();
+      }
+ 
+    },100);
+  };
+
   return shader;
 };
 
-
-
-
-/*
-Mine.ShaderProgram = function(){
-  var program = Mine.Base();
-  program._add_class(Mine.ShaderProgram);
-
-  program.init = function(){
-    var gl = Mine.THE_ONE_GL_STAGE.gl;
-    program.program = gl.createProgram();
-  };
-
-
-
-  program.add_shader = function(new_shader){
-    var gl = Mine.THE_ONE_GL_STAGE.gl;
-
-    gl.attachShader(program.program, new_shader.shader);
-
-  };
-
-
-
-  program.link = function(){
-    var gl = Mine.THE_ONE_GL_STAGE.gl;
-    console.log("Trying to link...");
-    gl.linkProgram(program.program);
-
-    if (!gl.getProgramParameter(program.program, gl.LINK_STATUS)){
-      console.log("Failed to link program");
-      return false;
-    }
-    else{
-      console.log("program linked!!!");
-      gl.useProgram(program.program);
-
-      //Vertex position.
-      program.program.vertexPositionAttribute = gl.getAttribLocation(program.program, "aVertexPosition");
-      gl.enableVertexAttribArray(program.program.vertexPositionAttribute);
-
-      //Vertex color.
-      program.program.vertexColorAttribute = gl.getAttribLocation(program.program, "aVertexColor");
-      gl.enableVertexAttribArray(program.program.vertexColorAttribute);
-
-
-      program.program.pMatrixUniform = gl.getUniformLocation(program.program,"uPMatrix");
-      program.program.mvMatrixUniform = gl.getUniformLocation(program.program,"uMVMatrix");
-      return true;
-    }
-  };
-
-
-
-  return program;
-}
-*/

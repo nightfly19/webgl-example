@@ -49,6 +49,10 @@ Mine.Thing = function(){
     return thing.rotation;
   };
 
+  thing.act = function(){
+    console.log("I'm empty...");
+  };
+
   return thing;
 };
 #endif

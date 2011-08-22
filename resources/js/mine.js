@@ -49,7 +49,6 @@ Mine.ShaderProgram = function(shader_name){
   var shader = Mine.Base();
   shader._add_class(Mine.ShaderProgram);
   var shader_location = Mine.RESOURCE_LOCATION+"/shaders/";
-  console.log("Loading shader: "+shader_name);
   shader.loaded = false;
   shader.failed = false;
   shader.program = null;
@@ -122,62 +121,20 @@ Mine.ShaderProgram = function(shader_name){
       return new_shader;
     }
   }
+  shader.waitFor = function(callback){
+    var timer = setInterval(function(){
+      if(shader.failed){
+        clearInterval(timer);
+        console.log("Shader failed to compile...");
+      }
+      if(shader.loaded){
+        clearInterval(timer);
+        callback();
+      }
+    },100);
+  };
   return shader;
 };
-/*
-Mine.ShaderProgram = function(){
-  var program = Mine.Base();
-  program._add_class(Mine.ShaderProgram);
-
-  program.init = function(){
-    var gl = Mine.THE_ONE_GL_STAGE.gl;
-    program.program = gl.createProgram();
-  };
-
-
-
-  program.add_shader = function(new_shader){
-    var gl = Mine.THE_ONE_GL_STAGE.gl;
-
-    gl.attachShader(program.program, new_shader.shader);
-
-  };
-
-
-
-  program.link = function(){
-    var gl = Mine.THE_ONE_GL_STAGE.gl;
-    console.log("Trying to link...");
-    gl.linkProgram(program.program);
-
-    if (!gl.getProgramParameter(program.program, gl.LINK_STATUS)){
-      console.log("Failed to link program");
-      return false;
-    }
-    else{
-      console.log("program linked!!!");
-      gl.useProgram(program.program);
-
-      //Vertex position.
-      program.program.vertexPositionAttribute = gl.getAttribLocation(program.program, "aVertexPosition");
-      gl.enableVertexAttribArray(program.program.vertexPositionAttribute);
-
-      //Vertex color.
-      program.program.vertexColorAttribute = gl.getAttribLocation(program.program, "aVertexColor");
-      gl.enableVertexAttribArray(program.program.vertexColorAttribute);
-
-
-      program.program.pMatrixUniform = gl.getUniformLocation(program.program,"uPMatrix");
-      program.program.mvMatrixUniform = gl.getUniformLocation(program.program,"uMVMatrix");
-      return true;
-    }
-  };
-
-
-
-  return program;
-}
-*/
 //Begin primatives.
 Mine.Primatives = {};
 //False when a WebGL context hasn't been initialized.
@@ -335,6 +292,9 @@ Mine.Thing = function(){
   thing.getRot = function(){
     return thing.rotation;
   };
+  thing.act = function(){
+    console.log("I'm empty...");
+  };
   return thing;
 };
 Mine.BasicShapes = {};
@@ -358,9 +318,12 @@ Mine.GL_stage = function(id){
   gl_stage.canvas = null;
   gl_stage.gl = null;
   gl_stage.program = null;
+  gl_stage.actors = [];
   gl_stage.mvMatrix = mat4.create();
   gl_stage.pMatrix = mat4.create();
   gl_stage.bgColor = Mine.Colors.black;
+  gl_stage.fps = 1000/30;
+  gl_stage.interval = null;
   //Get the canvas.
   gl_stage.canvas = document.getElementById(id);
   //Try and initialize WebGL.
@@ -404,7 +367,7 @@ Mine.GL_stage = function(id){
   gl_stage.draw = function(target){
     //Reset the move matrix.
     mat4.identity(gl_stage.mvMatrix);
-    if(target._is_a(Mine.Thing)){
+    if(target && target._is_a(Mine.Thing)){
       //console.log("Drawing a thing");
       mat4.translate(gl_stage.mvMatrix, target.getPos());
       mat4.rotate(gl_stage.mvMatrix, target.getRot()[0], [1, 0, 0]);
@@ -433,6 +396,31 @@ Mine.GL_stage = function(id){
       }
     }
   };
+  gl_stage.add = function(new_actor){
+    gl_stage.actors.push(new_actor);
+    new_actor.stage = gl_stage;
+  }
+  gl_stage.run = function(){
+    if(gl_stage.interval){
+      return;
+    }
+    Mine.gl.clearColor(0.0, 1.0, 0.0, 1.0);
+    Mine.gl.enable(Mine.gl.DEPTH_TEST);
+    mat4.perspective(45, gl_stage.gl.viewportWidth / gl_stage.gl.viewportHeight, 0.1, 100.0, gl_stage.pMatrix);
+    gl_stage.interval = setInterval(function(){
+      gl_stage.clear();
+      for(actor in gl_stage.actors){
+        gl_stage.actors[actor].act();
+      }
+      for(actor in gl_stage.actors){
+        gl_stage.draw(gl_stage.actors[actor]);
+      }
+    },gl_stage.fps);
+  };
+  gl_stage.end = function(){
+    clearInterval(gl_stage.interval);
+    gl_stage.interval = null;
+  }
   //Constructor stuff.
   if(gl_stage.gl){
     //gl_stage.clear();
@@ -449,55 +437,17 @@ Mine.GL_stage = function(id){
 $(document).ready(function(){
   //Create the WebGL stage.
   var stage = Mine.GL_stage("minedotjs")
-  var gl_stage = stage;
   var colored_shader = Mine.ShaderProgram("colored");
-  //Strictly following the tutorial below.
-  var shape = Mine.BasicShapes.Square();
+  var shape = Mine.BasicShapes.Cube();
   shape.shape.setColor(Mine.Colors.indigo);
-  var gl = Mine.gl;
-  function drawScene(z_position){
-    gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    mat4.perspective(45, gl_stage.gl.viewportWidth / gl_stage.gl.viewportHeight, 0.1, 100.0, gl_stage.pMatrix);
-    mat4.identity(gl_stage.mvMatrix);
-    mat4.translate(gl_stage.mvMatrix, [0.0, 0.0, z_position]);
-    //Square vertex shit.
-    gl.bindBuffer(gl_stage.gl.ARRAY_BUFFER, shape.shape.vBuffer);
-    gl.vertexAttribPointer(stage.program.vertexPositionAttribute, shape.shape.vSize, gl.FLOAT, false, 0, 0);
-    //Square color shit.
-    gl.bindBuffer(gl.ARRAY_BUFFER, shape.shape.cBuffer);
-    gl.vertexAttribPointer(stage.program.vertexColorAttribute, shape.shape.cSize, gl.FLOAT, false, 0, 0);
-    gl_stage.setUniforms();
-    //Draw the shape.
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, shape.shape.vCount);
-    console.log("It should have drawn...");
-  }
-  var timer;
-  timer = setInterval(function(){
-    if(colored_shader.failed){
-      clearInterval(timer);
-      console.log("Shader failed to compile...");
-    }
-    if(colored_shader.loaded){
-      clearInterval(timer);
-      console.log("Moving on");
-      stage.setProgram(colored_shader);
-      gl.clearColor(0.0, 1.0, 0.0, 1.0);
-      gl.enable(gl.DEPTH_TEST);
-      shape.addRot([0.0, 0.0, 0.5]);
-      var test = setInterval(function(){
-      //Draw the scene.
-      mat4.perspective(45, gl_stage.gl.viewportWidth / gl_stage.gl.viewportHeight, 0.1, 100.0, gl_stage.pMatrix);
-      shape.setPos([0, 0, -10]);
-      shape.addRot([0.0, 0.05, 0]);
-      //shape.setRot([0,1,0]);
-      gl_stage.clear();
-      //mat4.identity(gl_stage.mvMatrix);
-      gl_stage.draw(shape);
-      },1000/30);
-    }
-    else{
-      console.log("Waiting for shader");
-    }
-  },100);
+  shape.addRot([0.0, 0.0, 0.5]);
+  shape.act = function(){
+    shape.setPos([0, 0, -10]);
+    shape.addRot([0.0, 0.05, 0]);
+  };
+  stage.add(shape);
+  colored_shader.waitFor(function(){
+    stage.setProgram(colored_shader);
+    stage.run();
+  });
 });
