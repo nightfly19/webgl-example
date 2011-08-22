@@ -27,6 +27,8 @@ Mine.ShaderProgram = function(shader_name){
                 //Build the shader program.
                 var gl = Mine.THE_ONE_GL_STAGE.gl;
                 var shader_program = gl.createProgram();
+                //console.log(fragment_shader);
+                //console.log(vertex_shader);
                 gl.attachShader(shader_program, fragment_shader);
                 gl.attachShader(shader_program, vertex_shader);
                 //console.log("Trying to link...");

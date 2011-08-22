@@ -67,6 +67,8 @@ Mine.ShaderProgram = function(shader_name){
                 //Build the shader program.
                 var gl = Mine.THE_ONE_GL_STAGE.gl;
                 var shader_program = gl.createProgram();
+                //console.log(fragment_shader);
+                //console.log(vertex_shader);
                 gl.attachShader(shader_program, fragment_shader);
                 gl.attachShader(shader_program, vertex_shader);
                 //console.log("Trying to link...");
@@ -141,21 +143,30 @@ Mine.Primatives = {};
 //Mine.Primatives.ready = false;
 Mine.Primatives.Types = ["TRIANGLE_STRIP"];
 Mine.Primatives.Primative = function(){
+  Mine.dm("Creating a primative");
   var primative = Mine.Base();
   primative._add_class(Mine.Primatives.Primative);
   primative.vertices = [];
   primative.type = null;
   primative.vertices = [];
   primative.vBuffer = Mine.gl.createBuffer();
+    Mine.perror();
   primative.vCount = 0;
   primative.vSize = 3;
   primative.iBuffer = Mine.gl.createBuffer();
+    Mine.perror();
   primative.iCount= 0;
   primative.iSize = 1;
   primative.colors = false;
   primative.cBuffer = Mine.gl.createBuffer();
+    Mine.perror();
   primative.cCount = 0;
   primative.cSize = 4;
+  primative.tcBuffer = Mine.gl.createBuffer();
+    Mine.perror();
+  primative.tcCount = 0;
+  primative.tcSize = 2;
+  primative.texCoords = [];
   primative.setColor = function(new_color){
     if(!primative.colors){
       primative.colors = Array(primative.cCount * primative.cSize);
@@ -164,8 +175,11 @@ Mine.Primatives.Primative = function(){
       primative.colors[i] = new_color[i%primative.cSize];
     }
     Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, primative.cBuffer);
+    Mine.perror();
     Mine.gl.bufferData(Mine.gl.ARRAY_BUFFER, new Float32Array(primative.colors), Mine.gl.STATIC_DRAW);
+    Mine.perror();
   };
+  Mine.dm("Created a primative");
   return primative;
 };
 Mine.Primatives.Triangle = function(){
@@ -208,6 +222,8 @@ Mine.Primatives.Square = function(){
 Mine.Primatives.Cube = function(){
   var cube = Mine.Primatives.Primative();
   cube._add_class(Mine.Primatives.Cube);
+  Mine.dm("Making a cube");
+  Mine.perror();
   //The vertices are coming!
   cube.vertices = [
     //Front..
@@ -242,9 +258,11 @@ Mine.Primatives.Cube = function(){
     -1.0, 1.0, -1.0
   ];
   cube.vCount = 24;
-  //Creating and filling the buffer.
+  //Filling the vertex buffer.
   Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, cube.vBuffer);
+  Mine.perror();
   Mine.gl.bufferData(Mine.gl.ARRAY_BUFFER, new Float32Array(cube.vertices), Mine.gl.STATIC_DRAW);
+  Mine.perror();
   //Fill the index buffer.
   cube.indexes = [
     0, 1, 2, 0, 2, 3, //Front
@@ -256,13 +274,54 @@ Mine.Primatives.Cube = function(){
   ];
   cube.iCount = 36;
   Mine.gl.bindBuffer(Mine.gl.ELEMENT_ARRAY_BUFFER,cube.iBuffer);
+  Mine.perror();
   Mine.gl.bufferData(Mine.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(cube.indexes), Mine.gl.STATIC_DRAW);
+  Mine.perror();
+  //Fill the texture coordinates...
+  cube.texCoords = [
+    //Front
+    0.0, 0.0,
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0,
+    //Back
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0,
+    0.0, 0.0,
+    //Top
+    0.0, 1.0,
+    0.0, 0.0,
+    1.0, 0.0,
+    1.0, 1.0,
+    //Bottom
+    1.0, 1.0,
+    0.0, 1.0,
+    0.0, 0.0,
+    1.0, 0.0,
+    //Right
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0,
+    0.0, 0.0,
+    //Left
+    0.0, 0.0,
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0
+  ];
+  Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, cube.tcBuffer);
+  Mine.perror();
+  Mine.gl.bufferData(Mine.gl.ARRAY_BUFFER, new Float32Array(cube.texCoords), Mine.gl.STATIC_DRAW);
+  Mine.perror();
+  cube.tcCount = 24;
   //Color the cube
   cube.cCount = cube.vCount;
   cube.setColor(Mine.Colors.red);
   cube.type = "ELEMENTS_TRIANGLES";
-  cube.type = "TRIANGLE_STRIP";
- return cube;
+  //cube.type = "TRIANGLE_STRIP";
+  Mine.dm("Made a cube");
+  return cube;
 }
 Mine.Thing = function(){
   var thing = Mine.Base();
@@ -328,8 +387,11 @@ Mine.GL_stage = function(id){
   gl_stage.canvas = document.getElementById(id);
   //Try and initialize WebGL.
   //try{
+    Mine.dm("Initializing webgl");
     gl_stage.gl = gl_stage.canvas.getContext("experimental-webgl");
     Mine.gl = gl_stage.gl;
+    WebGLDebugUtils.init(Mine.gl);
+    Mine.perror();
   //}
   //catch(e){
   //  console.log("Failed to initialize webgl");
@@ -337,34 +399,61 @@ Mine.GL_stage = function(id){
   //}
   //Set the current shader program.
   gl_stage.setProgram = function(active_program){
+    Mine.dm("Setting shader");
     gl_stage.program = active_program.program;
     gl_stage.gl.useProgram(active_program.program);
+    Mine.perror();
     //Vertex position.
     gl_stage.program.vertexPositionAttribute = gl_stage.gl.getAttribLocation(gl_stage.program, "aVertexPosition");
+    Mine.perror();
     gl_stage.gl.enableVertexAttribArray(gl_stage.program.vertexPositionAttribute);
+    Mine.perror();
     //Vertex color.
     gl_stage.program.vertexColorAttribute = gl_stage.gl.getAttribLocation(gl_stage.program, "aVertexColor");
+    Mine.perror();
     gl_stage.gl.enableVertexAttribArray(gl_stage.program.vertexColorAttribute);
+    Mine.perror();
+    //Vertex texture coord
+    //Mine.dm("So I can get aTextureCoord?");
+    //gl_stage.program.textureCoordAttribute = gl_stage.gl.getAttribLocation(gl_stage.program, "aTextureCoord");
+    //Mine.perror();
+    //gl_stage.gl.enableVertexAttribArray(gl_stage.program.textureCoordAttribute);
+    //Mine.perror();
     gl_stage.program.pMatrixUniform = gl_stage.gl.getUniformLocation(gl_stage.program,"uPMatrix");
+    Mine.perror();
     gl_stage.program.mvMatrixUniform = gl_stage.gl.getUniformLocation(gl_stage.program,"uMVMatrix");
+    Mine.perror();
+    //gl_stage.program.samplerUniform = gl_stage.gl.getUniformLocation(gl_stage.program,"uSampler");
+    //Mine.perror();
+    Mine.dm("Setting shader done");
   };
   //Set the uniforms.
   gl_stage.setUniforms = function(){
+    Mine.dm("Setting uniforms");
     gl_stage.gl.uniformMatrix4fv(gl_stage.program.pMatrixUniform, false, gl_stage.pMatrix);
+    Mine.perror();
     gl_stage.gl.uniformMatrix4fv(gl_stage.program.mvMatrixUniform, false, gl_stage.mvMatrix);
+    Mine.perror();
+    Mine.dm("Uniforms set.");
   }
   //Clear the stage.
   gl_stage.clear = function(){
+    Mine.dm("Clear the stage");
     gl_stage.gl.clearColor(gl_stage.bgColor[0],
         gl_stage.bgColor[1],
         gl_stage.bgColor[2],
         gl_stage.bgColor[3]
       );
     gl_stage.gl.enable(gl_stage.gl.DEPTH_TEST);
-    gl_stage.gl.depthFunc(gl_stage.glLEQUAL);
+    Mine.perror();
+    gl_stage.gl.depthFunc(gl_stage.gl.LEQUAL);
+    Mine.perror();
     gl_stage.gl.clear(gl_stage.gl.COLOR_BUFFER_BIT|gl_stage.gl.DEPTH_BUFFER_BIT);
+    Mine.perror();
+    Mine.dm("Cleared the stage");
   };
   gl_stage.draw = function(target){
+    Mine.dm("Drawing something");
     //Reset the move matrix.
     mat4.identity(gl_stage.mvMatrix);
     if(target && target._is_a(Mine.Thing)){
@@ -376,25 +465,46 @@ Mine.GL_stage = function(id){
       //Vvertex.
       Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, target.shape.vBuffer);
       Mine.gl.vertexAttribPointer(gl_stage.program.vertexPositionAttribute, target.shape.vSize, Mine.gl.FLOAT, false, 0, 0);
-      //Square color shit.
+      //Colors.
       Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, target.shape.cBuffer);
+      Mine.perror();
       Mine.gl.vertexAttribPointer(gl_stage.program.vertexColorAttribute, target.shape.cSize, Mine.gl.FLOAT, false, 0, 0);
-        gl_stage.setUniforms();
+      Mine.perror();
+      //Texture stuff :)
+      //console.log("Using texture: "+target.texture);
+      //console.log("Using gltexture: "+target.texture.glTexture);
+      //console.log( target.shape.tcBuffer);
+      //console.log( target.shape.tcSize);
+      Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, target.shape.tcBuffer);
+      Mine.perror();
+      //Mine.gl.vertexAttribPointer(gl_stage.program.textureCoordAttribute, target.shape.tcSize, Mine.gl.FLOAT, false, 0, 0);
+      Mine.perror();
+      //Mine.gl.activeTexture(Mine.gl.TEXTURE0);
+      Mine.perror();
+      //Mine.gl.bindTexture(Mine.gl.TEXTURE_2D, target.texture.glTexture);
+      Mine.perror();
+      //Mine.gl.uniform1i(gl_stage.program.samplerUniform, 0);
+      Mine.perror();
       //Draw the shape.
       if(target.shape.type == "TRIANGLE_STRIP"){
+        gl_stage.setUniforms();
         Mine.gl.drawArrays(Mine.gl.TRIANGLE_STRIP, 0, target.shape.vCount);
+        Mine.perror();
       }
       else if(target.shape.type == "ELEMENTS_TRIANGLES"){
         console.log("Drawing elements");
         //Indexes
         Mine.gl.bindBuffer(Mine.gl.ELEMENT_ARRAY_BUFFER, target.shape.iBuffer);
+        Mine.perror();
         gl_stage.setUniforms();
         Mine.gl.drawElements(Mine.gl.TRIANGLES, target.shape.iCount, Mine.gl.UNSIGNED_SHORT, 0);
+        Mine.perror();
       }
       else{
         console.log("Not known type...");
       }
     }
+    Mine.dm("Drew something");
   };
   gl_stage.add = function(new_actor){
     gl_stage.actors.push(new_actor);
@@ -405,8 +515,11 @@ Mine.GL_stage = function(id){
       return;
     }
     Mine.gl.clearColor(0.0, 1.0, 0.0, 1.0);
+    Mine.perror();
     Mine.gl.enable(Mine.gl.DEPTH_TEST);
+    Mine.perror();
     mat4.perspective(45, gl_stage.gl.viewportWidth / gl_stage.gl.viewportHeight, 0.1, 100.0, gl_stage.pMatrix);
+    Mine.perror();
     gl_stage.interval = setInterval(function(){
       gl_stage.clear();
       for(actor in gl_stage.actors){
@@ -433,21 +546,108 @@ Mine.GL_stage = function(id){
   Mine.THE_ONE_GL_STAGE = gl_stage;
   return gl_stage;
 }
+Mine.Texture = function(texture_name,callback){
+  var texture = Mine.Base();
+  texture._add_class(Mine.Texture);
+  Mine.dm("Creating a texture");
+  //Check the cache first!.
+  if(Mine.Texture.Cache[texture_name]){
+    console.log("Found it?");
+    return Mine.Texture.Cache[texture_name];
+  }
+  texture.glTexture = Mine.gl.createTexture();
+  Mine.perror();
+  texture.image = new Image();
+  texture.image.onload = function(){
+    Mine.gl.bindTexture(Mine.gl.TEXTURE_2D, texture.glTexture);
+      Mine.perror();
+    Mine.gl.pixelStorei(Mine.gl.UNPACK_FLIP_Y_WEBGL, true);
+      Mine.perror();
+    Mine.gl.texImage2D(Mine.gl.TEXTURE_2D, 0, Mine.gl.RGBA, Mine.gl.RGBA,
+        Mine.gl.UNSIGNED_BYTE,
+        texture.image);
+      Mine.perror();
+    Mine.gl.texParameteri(Mine.gl.TEXTURE_2D,
+        Mine.gl.TEXTURE_MAG_FILTER,
+        Mine.gl.NEAREST);
+      Mine.perror();
+    Mine.gl.texParameteri(Mine.gl.TEXTURE_2D,
+        Mine.gl.TEXTURE_MAG_FILTER,
+        Mine.gl.NEAREST);
+      Mine.perror();
+    Mine.gl.bindTexture(Mine.gl.TEXTURE_2D,null);
+      Mine.perror();
+    Mine.dm("Texture created.");
+    if(callback){
+      //console.log(texture.glTexture);
+      callback(texture);
+    }
+  };
+  texture.image.src = "http://localhost/~sage/minedotjs/resources/textures/kitten.gif";
+  //texture.image.src = Mine.Texture.TEXTURE_LOCATION+texture_name+".png"
+  //console.log(texture.image.src);
+  return texture;
+};
+Mine.Texture.TEXTURE_LOCATION = Mine.RESOURCE_LOCATION+"/textures/"
+Mine.Texture.Cache = {};
+Mine.debug = true;
+//Mine.debug = false;
+Mine.perror = function(force){
+  if(!Mine.debug && !force){
+    return;
+  }
+  var getError = function(){
+    try{
+      throw Error('')
+    }
+    catch(err){
+      return err;
+    }
+  }
+  var err = getError();
+  var error = Mine.gl.getError();
+  var temp = err.stack;
+  if(force || error != 0){
+    console.log("Checking for errors "+(temp.split("\n")[4]));
+    console.log("\t"+error);
+    console.log("\t"+WebGLDebugUtils.glEnumToString(error));
+  }
+};
+Mine.dm = function(message){
+  if(!Mine.debug){
+    return;
+  }
+  console.log(message);
+};
 // "Main" function :)
 $(document).ready(function(){
   //Create the WebGL stage.
-  var stage = Mine.GL_stage("minedotjs")
-  var colored_shader = Mine.ShaderProgram("colored");
+  var stage = Mine.GL_stage("minedotjs");
+  var shader = Mine.ShaderProgram("colored");
   var shape = Mine.BasicShapes.Cube();
+  Mine.dm("Creating a texture");
+  var texture = Mine.Texture("kitten",function(test){
+    shape.texture = test;
+  });
+    Mine.perror();
   shape.shape.setColor(Mine.Colors.indigo);
   shape.addRot([0.0, 0.0, 0.5]);
   shape.act = function(){
+    console.log("Moo");
     shape.setPos([0, 0, -10]);
-    shape.addRot([0.0, 0.05, 0]);
+    shape.addRot([0.0, 0.05, 0.05]);
   };
   stage.add(shape);
-  colored_shader.waitFor(function(){
-    stage.setProgram(colored_shader);
-    stage.run();
+  //Run the simulation.
+  shader.waitFor(function(){
+    stage.setProgram(shader);
+    setTimeout(function(){
+      stage.run();
+    },100);
   });
+  //Stop the simulation after 5 seconds.
+  setTimeout(function(){
+    stage.end();
+    Mine.dm("Stoping the stage.");
+  },5000);
 });

@@ -14,6 +14,7 @@ Mine.Primatives.Types = ["TRIANGLE_STRIP"];
 
 
 Mine.Primatives.Primative = function(){
+  Mine.dm("Creating a primative");
   var primative = Mine.Base();
   primative._add_class(Mine.Primatives.Primative);
   
@@ -21,15 +22,23 @@ Mine.Primatives.Primative = function(){
   primative.type = null;
   primative.vertices = [];
   primative.vBuffer = Mine.gl.createBuffer();
+    Mine.perror();
   primative.vCount = 0;
   primative.vSize = 3;
   primative.iBuffer = Mine.gl.createBuffer();
+    Mine.perror();
   primative.iCount= 0;
   primative.iSize = 1;
   primative.colors = false;
   primative.cBuffer = Mine.gl.createBuffer();
+    Mine.perror();
   primative.cCount = 0;
   primative.cSize = 4;
+  primative.tcBuffer = Mine.gl.createBuffer();
+    Mine.perror();
+  primative.tcCount = 0;
+  primative.tcSize = 2;
+  primative.texCoords = [];
 
   primative.setColor = function(new_color){
     if(!primative.colors){
@@ -41,8 +50,12 @@ Mine.Primatives.Primative = function(){
     }
 
     Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, primative.cBuffer);
+    Mine.perror();
     Mine.gl.bufferData(Mine.gl.ARRAY_BUFFER, new Float32Array(primative.colors), Mine.gl.STATIC_DRAW);
+    Mine.perror();
   };
+
+  Mine.dm("Created a primative");
   return primative;
 };
 
@@ -111,6 +124,8 @@ Mine.Primatives.Square = function(){
 Mine.Primatives.Cube = function(){
   var cube = Mine.Primatives.Primative();
   cube._add_class(Mine.Primatives.Cube);
+  Mine.dm("Making a cube");
+  Mine.perror();
 
   //The vertices are coming!
   cube.vertices = [
@@ -147,9 +162,11 @@ Mine.Primatives.Cube = function(){
   ];
   cube.vCount = 24;
 
-  //Creating and filling the buffer.
+  //Filling the vertex buffer.
   Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, cube.vBuffer);
+  Mine.perror();
   Mine.gl.bufferData(Mine.gl.ARRAY_BUFFER, new Float32Array(cube.vertices), Mine.gl.STATIC_DRAW);
+  Mine.perror();
 
   //Fill the index buffer.
   cube.indexes = [
@@ -163,15 +180,63 @@ Mine.Primatives.Cube = function(){
   cube.iCount = 36;
 
   Mine.gl.bindBuffer(Mine.gl.ELEMENT_ARRAY_BUFFER,cube.iBuffer);
+  Mine.perror();
   Mine.gl.bufferData(Mine.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(cube.indexes), Mine.gl.STATIC_DRAW);
+  Mine.perror();
+
+  //Fill the texture coordinates...
+  cube.texCoords = [
+    //Front
+    0.0, 0.0,
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0,
+
+    //Back
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0,
+    0.0, 0.0,
+
+    //Top
+    0.0, 1.0,
+    0.0, 0.0,
+    1.0, 0.0,
+    1.0, 1.0,
+
+    //Bottom
+    1.0, 1.0,
+    0.0, 1.0,
+    0.0, 0.0,
+    1.0, 0.0,
+
+    //Right
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0,
+    0.0, 0.0,
+
+    //Left
+    0.0, 0.0,
+    1.0, 0.0,
+    1.0, 1.0,
+    0.0, 1.0
+  ];
+
+  Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, cube.tcBuffer);
+  Mine.perror();
+  Mine.gl.bufferData(Mine.gl.ARRAY_BUFFER, new Float32Array(cube.texCoords), Mine.gl.STATIC_DRAW);
+  Mine.perror();
+  cube.tcCount = 24;
 
   //Color the cube
   cube.cCount = cube.vCount;
   cube.setColor(Mine.Colors.red);
   
   cube.type = "ELEMENTS_TRIANGLES";
-  cube.type = "TRIANGLE_STRIP";
+  //cube.type = "TRIANGLE_STRIP";
 
 
- return cube;
+  Mine.dm("Made a cube");
+  return cube;
 }
