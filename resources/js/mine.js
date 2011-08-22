@@ -33,6 +33,17 @@ Mine.Base = function(){
   base._add_class(Mine.Base);
   return base;
 }
+Mine.Colors = {
+  white:[1.0, 1.0, 1.0, 1.0],
+  red:[1.0, 0.0, 0.0, 1.0],
+  orange:[1.0, 0.5, 0.0, 1.0],
+  yellow:[1.0, 1.0, 0.0, 1.0],
+  green:[0.0, 1.0, 0.0, 1.0],
+  blue:[0.0, 0.0, 1.0, 1.0],
+  indigo:[0.5, 0.0, 1.0, 1.0],
+  violet:[1.0, 0.0, 1.0, 1.0],
+  black:[0.0, 0.0, 0.0, 1.0]
+};
 //Shaders begin here. 
 Mine.ShaderProgram = function(shader_name){
   var shader = Mine.Base();
@@ -193,7 +204,6 @@ Mine.Primatives.Primative = function(){
       primative.colors[i] = new_color[i%primative.cSize];
     }
     Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, primative.cBuffer);
-    console.log(primative.colors);
     Mine.gl.bufferData(Mine.gl.ARRAY_BUFFER, new Float32Array(primative.colors), Mine.gl.STATIC_DRAW);
   };
   return primative;
@@ -212,9 +222,7 @@ Mine.Primatives.Triangle = function(){
   Mine.gl.bufferData(Mine.gl.ARRAY_BUFFER, new Float32Array(triangle.vertices), Mine.gl.STATIC_DRAW);
   //Color the triangle.
   triangle.cCount = triangle.vCount;
-  triangle.setColor([1.0, 0.0, 0.0, 1.0]);
-  console.log(triangle.colors);
-  console.log("I made a triangle.");
+  triangle.setColor([1.0, 1.0, 1.0, 1.0]);
   return triangle;
 };
 Mine.Primatives.Square = function(){
@@ -228,10 +236,11 @@ Mine.Primatives.Square = function(){
   ];
   square.vCount = 4;
   //Creating and filling the buffer.
-  square.vBuffer = Mine.gl.createBuffer();
   Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER,square.vBuffer);
   Mine.gl.bufferData(Mine.gl.ARRAY_BUFFER, new Float32Array(square.vertices), Mine.gl.STATIC_DRAW);
-  console.log("I made a square.");
+  //Color the square
+  square.cCount= 4;
+  square.setColor([1.0,1.0,1.0,1.0]);
   return square;
 };
 Mine.Primatives.Cube = function(){
@@ -261,6 +270,13 @@ Mine.Thing = function(){
   };
   return thing;
 };
+Mine.BasicShapes = {};
+Mine.BasicShapes.Square = function(){
+  var square = Mine.Thing();
+  square._add_class(Mine.BasicShapes.Square);
+  square.shape = Mine.Primatives.Square();
+  return square;
+}
 //Stage begins here.
 Mine.GL_stage = function(id){
   var gl_stage = Mine.Base();
@@ -271,6 +287,7 @@ Mine.GL_stage = function(id){
   gl_stage.program = null;
   gl_stage.mvMatrix = mat4.create();
   gl_stage.pMatrix = mat4.create();
+  gl_stage.bgColor = Mine.Colors.black;
   //Get the canvas.
   gl_stage.canvas = document.getElementById(id);
   //Try and initialize WebGL.
@@ -302,14 +319,30 @@ Mine.GL_stage = function(id){
   }
   //Clear the stage.
   gl_stage.clear = function(){
-    gl_stage.gl.clearColor(0.0, 0.0, 0.0, 1);
+    gl_stage.gl.clearColor(gl_stage.bgColor[0],
+        gl_stage.bgColor[1],
+        gl_stage.bgColor[2],
+        gl_stage.bgColor[3]
+      );
     gl_stage.gl.enable(gl_stage.gl.DEPTH_TEST);
     gl_stage.gl.depthFunc(gl_stage.glLEQUAL);
     gl_stage.gl.clear(gl_stage.gl.COLOR_BUFFER_BIT|gl_stage.gl.DEPTH_BUFFER_BIT);
   };
   gl_stage.draw = function(target){
+    //Reset the move matrix.
+    mat4.identity(gl_stage.mvMatrix);
     if(target._is_a(Mine.Thing)){
       console.log("Drawing a thing");
+      mat4.translate(gl_stage.mvMatrix, target.getPos());
+      //Vvertex.
+      Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, target.shape.vBuffer);
+      Mine.gl.vertexAttribPointer(gl_stage.program.vertexPositionAttribute, target.shape.vSize, Mine.gl.FLOAT, false, 0, 0);
+      //Square color shit.
+      Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, target.shape.cBuffer);
+      Mine.gl.vertexAttribPointer(gl_stage.program.vertexColorAttribute, target.shape.cSize, Mine.gl.FLOAT, false, 0, 0);
+      gl_stage.setUniforms();
+      //Draw the shape.
+      Mine.gl.drawArrays(Mine.gl.TRIANGLE_STRIP, 0, target.shape.vCount);
     }
   };
   //Constructor stuff.
@@ -331,7 +364,8 @@ $(document).ready(function(){
   var gl_stage = stage;
   var colored_shader = Mine.ShaderProgram("colored");
   //Strictly following the tutorial below.
-  var shape = Mine.Primatives.Triangle();
+  var shape = Mine.BasicShapes.Square();
+  shape.shape.setColor(Mine.Colors.indigo);
   var gl = Mine.gl;
   function drawScene(z_position){
     gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
@@ -340,14 +374,14 @@ $(document).ready(function(){
     mat4.identity(gl_stage.mvMatrix);
     mat4.translate(gl_stage.mvMatrix, [0.0, 0.0, z_position]);
     //Square vertex shit.
-    gl.bindBuffer(gl_stage.gl.ARRAY_BUFFER, shape.vBuffer);
-    gl.vertexAttribPointer(stage.program.vertexPositionAttribute, shape.vSize, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl_stage.gl.ARRAY_BUFFER, shape.shape.vBuffer);
+    gl.vertexAttribPointer(stage.program.vertexPositionAttribute, shape.shape.vSize, gl.FLOAT, false, 0, 0);
     //Square color shit.
-    gl.bindBuffer(gl.ARRAY_BUFFER, shape.cBuffer);
-    gl.vertexAttribPointer(stage.program.vertexColorAttribute, shape.cSize, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, shape.shape.cBuffer);
+    gl.vertexAttribPointer(stage.program.vertexColorAttribute, shape.shape.cSize, gl.FLOAT, false, 0, 0);
     gl_stage.setUniforms();
     //Draw the shape.
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, shape.vCount);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, shape.shape.vCount);
     console.log("It should have drawn...");
   }
   var timer;
@@ -377,7 +411,14 @@ $(document).ready(function(){
           z_speed = 1;
           clearInterval(test);
         }
-      drawScene(z_position);
+      //drawScene(z_position);
+      //gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+      //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+      mat4.perspective(45, gl_stage.gl.viewportWidth / gl_stage.gl.viewportHeight, 0.1, 100.0, gl_stage.pMatrix);
+      shape.setPos([0, 0, z_position]);
+      gl_stage.clear();
+      //mat4.identity(gl_stage.mvMatrix);
+      gl_stage.draw(shape);
       },1000/30);
     }
     else{

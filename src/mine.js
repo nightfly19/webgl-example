@@ -2,9 +2,11 @@ var Mine = {};
 Mine.RESOURCE_LOCATION = "resources";
 
 #include "base.js"
+#include "colors.js"
 #include "shaders.js"
 #include "primatives.js"
 #include "thing.js"
+#include "basic_shapes.js"
 #include "stage.js"
 
 
@@ -21,7 +23,8 @@ $(document).ready(function(){
 
 
 
-  var shape = Mine.Primatives.Triangle();
+  var shape = Mine.BasicShapes.Square();
+  shape.shape.setColor(Mine.Colors.indigo);
   var gl = Mine.gl;
 
 
@@ -34,16 +37,16 @@ $(document).ready(function(){
     mat4.translate(gl_stage.mvMatrix, [0.0, 0.0, z_position]);
 
     //Square vertex shit.
-    gl.bindBuffer(gl_stage.gl.ARRAY_BUFFER, shape.vBuffer);
-    gl.vertexAttribPointer(stage.program.vertexPositionAttribute, shape.vSize, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl_stage.gl.ARRAY_BUFFER, shape.shape.vBuffer);
+    gl.vertexAttribPointer(stage.program.vertexPositionAttribute, shape.shape.vSize, gl.FLOAT, false, 0, 0);
 
     //Square color shit.
-    gl.bindBuffer(gl.ARRAY_BUFFER, shape.cBuffer);
-    gl.vertexAttribPointer(stage.program.vertexColorAttribute, shape.cSize, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, shape.shape.cBuffer);
+    gl.vertexAttribPointer(stage.program.vertexColorAttribute, shape.shape.cSize, gl.FLOAT, false, 0, 0);
     gl_stage.setUniforms();
   
     //Draw the shape.
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, shape.vCount);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, shape.shape.vCount);
     console.log("It should have drawn...");
   }
 
@@ -76,7 +79,14 @@ $(document).ready(function(){
           z_speed = 1;
           clearInterval(test);
         }
-      drawScene(z_position);
+      //drawScene(z_position);
+      //gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+      //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+      mat4.perspective(45, gl_stage.gl.viewportWidth / gl_stage.gl.viewportHeight, 0.1, 100.0, gl_stage.pMatrix);
+      shape.setPos([0, 0, z_position]);
+      gl_stage.clear();
+      //mat4.identity(gl_stage.mvMatrix);
+      gl_stage.draw(shape);
       },1000/30);
     }
     else{

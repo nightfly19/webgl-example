@@ -38,7 +38,6 @@ Mine.Primatives.Primative = function(){
     }
 
     Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, primative.cBuffer);
-    console.log(primative.colors);
     Mine.gl.bufferData(Mine.gl.ARRAY_BUFFER, new Float32Array(primative.colors), Mine.gl.STATIC_DRAW);
   };
   return primative;
@@ -66,10 +65,8 @@ Mine.Primatives.Triangle = function(){
 
   //Color the triangle.
   triangle.cCount = triangle.vCount;
-  triangle.setColor([1.0, 0.0, 0.0, 1.0]);
-  console.log(triangle.colors);
+  triangle.setColor([1.0, 1.0, 1.0, 1.0]);
 
-  console.log("I made a triangle.");
 
   return triangle;
 };
@@ -86,10 +83,12 @@ Mine.Primatives.Square = function(){
   square.vCount = 4;
 
   //Creating and filling the buffer.
-  square.vBuffer = Mine.gl.createBuffer();
   Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER,square.vBuffer);
   Mine.gl.bufferData(Mine.gl.ARRAY_BUFFER, new Float32Array(square.vertices), Mine.gl.STATIC_DRAW);
-  console.log("I made a square.");
+
+  //Color the square
+  square.cCount= 4;
+  square.setColor([1.0,1.0,1.0,1.0]);
 
   return square;
 };

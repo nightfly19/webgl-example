@@ -10,6 +10,7 @@ Mine.GL_stage = function(id){
   gl_stage.program = null;
   gl_stage.mvMatrix = mat4.create();
   gl_stage.pMatrix = mat4.create();
+  gl_stage.bgColor = Mine.Colors.black;
 
   //Get the canvas.
   gl_stage.canvas = document.getElementById(id);
@@ -56,16 +57,37 @@ Mine.GL_stage = function(id){
 
   //Clear the stage.
   gl_stage.clear = function(){
-    gl_stage.gl.clearColor(0.0, 0.0, 0.0, 1);
+    gl_stage.gl.clearColor(gl_stage.bgColor[0], 
+        gl_stage.bgColor[1], 
+        gl_stage.bgColor[2], 
+        gl_stage.bgColor[3] 
+      );
     gl_stage.gl.enable(gl_stage.gl.DEPTH_TEST);
     gl_stage.gl.depthFunc(gl_stage.glLEQUAL);
     gl_stage.gl.clear(gl_stage.gl.COLOR_BUFFER_BIT|gl_stage.gl.DEPTH_BUFFER_BIT);
   };
 
 
+
   gl_stage.draw = function(target){
+    //Reset the move matrix.
+    mat4.identity(gl_stage.mvMatrix);
+
     if(target._is_a(Mine.Thing)){
       console.log("Drawing a thing");
+      mat4.translate(gl_stage.mvMatrix, target.getPos());
+
+      //Vvertex.
+      Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, target.shape.vBuffer);
+      Mine.gl.vertexAttribPointer(gl_stage.program.vertexPositionAttribute, target.shape.vSize, Mine.gl.FLOAT, false, 0, 0);
+
+      //Square color shit.
+      Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, target.shape.cBuffer);
+      Mine.gl.vertexAttribPointer(gl_stage.program.vertexColorAttribute, target.shape.cSize, Mine.gl.FLOAT, false, 0, 0);
+      gl_stage.setUniforms();
+  
+      //Draw the shape.
+      Mine.gl.drawArrays(Mine.gl.TRIANGLE_STRIP, 0, target.shape.vCount);
     }
   };
 
