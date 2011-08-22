@@ -192,6 +192,9 @@ Mine.Primatives.Primative = function(){
   primative.vBuffer = Mine.gl.createBuffer();
   primative.vCount = 0;
   primative.vSize = 3;
+  primative.iBuffer = Mine.gl.createBuffer();
+  primative.iCount= 0;
+  primative.iSize = 1;
   primative.colors = false;
   primative.cBuffer = Mine.gl.createBuffer();
   primative.cCount = 0;
@@ -223,6 +226,7 @@ Mine.Primatives.Triangle = function(){
   //Color the triangle.
   triangle.cCount = triangle.vCount;
   triangle.setColor([1.0, 1.0, 1.0, 1.0]);
+  triangle.type = "TRIANGLE_STRIP";
   return triangle;
 };
 Mine.Primatives.Square = function(){
@@ -239,14 +243,69 @@ Mine.Primatives.Square = function(){
   Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER,square.vBuffer);
   Mine.gl.bufferData(Mine.gl.ARRAY_BUFFER, new Float32Array(square.vertices), Mine.gl.STATIC_DRAW);
   //Color the square
-  square.cCount= 4;
+  square.cCount= square.vCount;
   square.setColor([1.0,1.0,1.0,1.0]);
+  square.type = "TRIANGLE_STRIP";
   return square;
 };
 Mine.Primatives.Cube = function(){
   var cube = Mine.Primatives.Primative();
-  primatives.add_class(Mine.Primatives.Cube);
-  return cube;
+  cube._add_class(Mine.Primatives.Cube);
+  //The vertices are coming!
+  cube.vertices = [
+    //Front..
+    -1.0, -1.0, 1.0,
+     1.0, -1.0, 1.0,
+     1.0, 1.0, 1.0,
+    -1.0, 1.0, 1.0,
+    //Back
+    -1.0, -1.0, -1.0,
+    -1.0, 1.0, -1.0,
+     1.0, 1.0, -1.0,
+     1.0, -1.0, -1.0,
+    //Top
+    -1.0, 1.0, -1.0,
+    -1.0, 1.0, 1.0,
+     1.0, 1.0, 1.0,
+     1.0, 1.0, -1.0,
+    //Bottom
+    -1.0, -1.0, -1.0,
+     1.0, -1.0, -1.0,
+     1.0, -1.0, 1.0,
+    -1.0, -1.0, 1.0,
+    //Right
+     1.0, -1.0, -1.0,
+     1.0, 1.0, -1.0,
+     1.0, 1.0, 1.0,
+     1.0, -1.0, 1.0,
+    //Left
+    -1.0, -1.0, -1.0,
+    -1.0, -1.0, 1.0,
+    -1.0, 1.0, 1.0,
+    -1.0, 1.0, -1.0
+  ];
+  cube.vCount = 24;
+  //Creating and filling the buffer.
+  Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, cube.vBuffer);
+  Mine.gl.bufferData(Mine.gl.ARRAY_BUFFER, new Float32Array(cube.vertices), Mine.gl.STATIC_DRAW);
+  //Fill the index buffer.
+  cube.indexes = [
+    0, 1, 2, 0, 2, 3, //Front
+    4, 5, 6, 4, 6, 7, //Back
+    8, 9, 10, 8, 10, 11, //Top
+    12, 13, 14, 12, 14, 15, //Bottom
+    16, 17, 18, 16, 18, 19, //Right
+    20, 21, 22, 20, 22, 23 //Left
+  ];
+  cube.iCount = 36;
+  Mine.gl.bindBuffer(Mine.gl.ELEMENT_ARRAY_BUFFER,cube.iBuffer);
+  Mine.gl.bufferData(Mine.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(cube.indexes), Mine.gl.STATIC_DRAW);
+  //Color the cube
+  cube.cCount = cube.vCount;
+  cube.setColor(Mine.Colors.red);
+  cube.type = "ELEMENTS_TRIANGLES";
+  cube.type = "TRIANGLE_STRIP";
+ return cube;
 }
 Mine.Thing = function(){
   var thing = Mine.Base();
@@ -265,6 +324,14 @@ Mine.Thing = function(){
   thing.getPos = function(){
     return thing.position;
   };
+  thing.setRot = function(new_rot){
+    thing.rotation= new_rot;
+  };
+  thing.addRot = function(new_rot){
+    for(i in thing.rotation){
+      thing.rotation[i] += new_rot[i];
+    }
+  };
   thing.getRot = function(){
     return thing.rotation;
   };
@@ -276,7 +343,13 @@ Mine.BasicShapes.Square = function(){
   square._add_class(Mine.BasicShapes.Square);
   square.shape = Mine.Primatives.Square();
   return square;
-}
+};
+Mine.BasicShapes.Cube= function(){
+  var cube = Mine.Thing();
+  cube._add_class(Mine.BasicShapes.Cube);
+  cube.shape = Mine.Primatives.Cube();
+  return cube;
+};
 //Stage begins here.
 Mine.GL_stage = function(id){
   var gl_stage = Mine.Base();
@@ -332,17 +405,32 @@ Mine.GL_stage = function(id){
     //Reset the move matrix.
     mat4.identity(gl_stage.mvMatrix);
     if(target._is_a(Mine.Thing)){
-      console.log("Drawing a thing");
+      //console.log("Drawing a thing");
       mat4.translate(gl_stage.mvMatrix, target.getPos());
+      mat4.rotate(gl_stage.mvMatrix, target.getRot()[0], [1, 0, 0]);
+      mat4.rotate(gl_stage.mvMatrix, target.getRot()[1], [0, 1, 0]);
+      mat4.rotate(gl_stage.mvMatrix, target.getRot()[2], [0, 0, 1]);
       //Vvertex.
       Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, target.shape.vBuffer);
       Mine.gl.vertexAttribPointer(gl_stage.program.vertexPositionAttribute, target.shape.vSize, Mine.gl.FLOAT, false, 0, 0);
       //Square color shit.
       Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, target.shape.cBuffer);
       Mine.gl.vertexAttribPointer(gl_stage.program.vertexColorAttribute, target.shape.cSize, Mine.gl.FLOAT, false, 0, 0);
-      gl_stage.setUniforms();
+        gl_stage.setUniforms();
       //Draw the shape.
-      Mine.gl.drawArrays(Mine.gl.TRIANGLE_STRIP, 0, target.shape.vCount);
+      if(target.shape.type == "TRIANGLE_STRIP"){
+        Mine.gl.drawArrays(Mine.gl.TRIANGLE_STRIP, 0, target.shape.vCount);
+      }
+      else if(target.shape.type == "ELEMENTS_TRIANGLES"){
+        console.log("Drawing elements");
+        //Indexes
+        Mine.gl.bindBuffer(Mine.gl.ELEMENT_ARRAY_BUFFER, target.shape.iBuffer);
+        gl_stage.setUniforms();
+        Mine.gl.drawElements(Mine.gl.TRIANGLES, target.shape.iCount, Mine.gl.UNSIGNED_SHORT, 0);
+      }
+      else{
+        console.log("Not known type...");
+      }
     }
   };
   //Constructor stuff.
@@ -396,26 +484,13 @@ $(document).ready(function(){
       stage.setProgram(colored_shader);
       gl.clearColor(0.0, 1.0, 0.0, 1.0);
       gl.enable(gl.DEPTH_TEST);
-      var z_position = -1;
-      var z_speed = -1;
-      var z_min = -50;
-      var z_max = -1;
+      shape.addRot([0.0, 0.0, 0.5]);
       var test = setInterval(function(){
-        z_position += z_speed;
-        if(z_position > z_max){
-          z_position = z_max;
-          z_speed = -1;
-        }
-        if(z_position < z_min){
-          z_position = z_min;
-          z_speed = 1;
-          clearInterval(test);
-        }
-      //drawScene(z_position);
-      //gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-      //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+      //Draw the scene.
       mat4.perspective(45, gl_stage.gl.viewportWidth / gl_stage.gl.viewportHeight, 0.1, 100.0, gl_stage.pMatrix);
-      shape.setPos([0, 0, z_position]);
+      shape.setPos([0, 0, -10]);
+      shape.addRot([0.0, 0.05, 0]);
+      //shape.setRot([0,1,0]);
       gl_stage.clear();
       //mat4.identity(gl_stage.mvMatrix);
       gl_stage.draw(shape);

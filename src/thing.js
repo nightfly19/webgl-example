@@ -31,6 +31,20 @@ Mine.Thing = function(){
 
 
 
+  thing.setRot = function(new_rot){
+    thing.rotation= new_rot;
+  };
+
+
+
+  thing.addRot = function(new_rot){
+    for(i in thing.rotation){
+      thing.rotation[i] += new_rot[i];
+    }
+  };
+
+
+
   thing.getRot = function(){
     return thing.rotation;
   };

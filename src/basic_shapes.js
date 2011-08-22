@@ -9,6 +9,18 @@ Mine.BasicShapes.Square = function(){
 
   square.shape = Mine.Primatives.Square();
   return square;
-}
+};
+
+
+
+
+
+Mine.BasicShapes.Cube= function(){
+  var cube = Mine.Thing();
+  cube._add_class(Mine.BasicShapes.Cube);
+
+  cube.shape = Mine.Primatives.Cube();
+  return cube;
+};
 
 #endif

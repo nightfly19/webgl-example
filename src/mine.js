@@ -64,26 +64,15 @@ $(document).ready(function(){
       stage.setProgram(colored_shader);
       gl.clearColor(0.0, 1.0, 0.0, 1.0);
       gl.enable(gl.DEPTH_TEST);
-      var z_position = -1;
-      var z_speed = -1;
-      var z_min = -50;
-      var z_max = -1;
+      shape.addRot([0.0, 0.0, 0.5]);
       var test = setInterval(function(){
-        z_position += z_speed;
-        if(z_position > z_max){
-          z_position = z_max;
-          z_speed = -1;
-        }
-        if(z_position < z_min){
-          z_position = z_min;
-          z_speed = 1;
-          clearInterval(test);
-        }
-      //drawScene(z_position);
-      //gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-      //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+      //Draw the scene.
       mat4.perspective(45, gl_stage.gl.viewportWidth / gl_stage.gl.viewportHeight, 0.1, 100.0, gl_stage.pMatrix);
-      shape.setPos([0, 0, z_position]);
+
+      shape.setPos([0, 0, -10]);
+      shape.addRot([0.0, 0.05, 0]);
+      //shape.setRot([0,1,0]);
       gl_stage.clear();
       //mat4.identity(gl_stage.mvMatrix);
       gl_stage.draw(shape);

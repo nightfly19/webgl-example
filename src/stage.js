@@ -74,8 +74,12 @@ Mine.GL_stage = function(id){
     mat4.identity(gl_stage.mvMatrix);
 
     if(target._is_a(Mine.Thing)){
-      console.log("Drawing a thing");
+      //console.log("Drawing a thing");
       mat4.translate(gl_stage.mvMatrix, target.getPos());
+
+      mat4.rotate(gl_stage.mvMatrix, target.getRot()[0], [1, 0, 0]);
+      mat4.rotate(gl_stage.mvMatrix, target.getRot()[1], [0, 1, 0]);
+      mat4.rotate(gl_stage.mvMatrix, target.getRot()[2], [0, 0, 1]);
 
       //Vvertex.
       Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, target.shape.vBuffer);
@@ -84,10 +88,25 @@ Mine.GL_stage = function(id){
       //Square color shit.
       Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, target.shape.cBuffer);
       Mine.gl.vertexAttribPointer(gl_stage.program.vertexColorAttribute, target.shape.cSize, Mine.gl.FLOAT, false, 0, 0);
-      gl_stage.setUniforms();
+        gl_stage.setUniforms();
   
       //Draw the shape.
-      Mine.gl.drawArrays(Mine.gl.TRIANGLE_STRIP, 0, target.shape.vCount);
+
+      if(target.shape.type == "TRIANGLE_STRIP"){
+        Mine.gl.drawArrays(Mine.gl.TRIANGLE_STRIP, 0, target.shape.vCount);
+      }
+      else if(target.shape.type == "ELEMENTS_TRIANGLES"){
+        console.log("Drawing elements");
+
+        //Indexes
+        Mine.gl.bindBuffer(Mine.gl.ELEMENT_ARRAY_BUFFER, target.shape.iBuffer);
+        
+        gl_stage.setUniforms();
+        Mine.gl.drawElements(Mine.gl.TRIANGLES, target.shape.iCount, Mine.gl.UNSIGNED_SHORT, 0);
+      }
+      else{
+        console.log("Not known type...");
+      }
     }
   };
 
