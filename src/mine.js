@@ -55,17 +55,17 @@ $(document).ready(function(){
   var shader = Mine.ShaderProgram("textured");
   var shape = Mine.BasicShapes.Cube();
   Mine.dm("Creating a texture");
-  var texture = Mine.Texture("kitten",function(test){
+  var texture = Mine.Texture("terrain",function(test){
     shape.texture = test;
   });
     Mine.perror();
   
   shape.shape.setColor(Mine.Colors.indigo);
 
-  shape.addRot([0.0, 0.0, 0.5]);
+  //shape.addRot([0.5, 0.0, 0.0]);
   shape.act = function(){
     shape.setPos([0, 0, -10]);
-    shape.addRot([0.0, 0.05, 0.05]);
+    shape.addRot([0.0, 0.05, 0.00]);
   };
 
   stage.add(shape);

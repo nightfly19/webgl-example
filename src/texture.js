@@ -39,8 +39,8 @@ Mine.Texture = function(texture_name,callback){
     }
   };
 
-  texture.image.src = "http://localhost/~sage/minedotjs/resources/textures/kitten.gif";
-  //texture.image.src = Mine.Texture.TEXTURE_LOCATION+texture_name+".png"
+  //texture.image.src = "http://localhost/~sage/minedotjs/resources/textures/kitten.png";
+  texture.image.src = Mine.Texture.TEXTURE_LOCATION+texture_name+".png"
 
   //console.log(texture.image.src);
 

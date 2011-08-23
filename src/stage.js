@@ -66,6 +66,7 @@ Mine.GL_stage = function(id){
     gl_stage.program.mvMatrixUniform = gl_stage.gl.getUniformLocation(gl_stage.program,"uMVMatrix");
     Mine.perror();
     gl_stage.program.samplerUniform = gl_stage.gl.getUniformLocation(gl_stage.program,"uSampler");
+    gl_stage.program.textureLocation = gl_stage.gl.getUniformLocation(gl_stage.program,"textureLocation");
     Mine.perror();
  
     Mine.dm("Setting shader done");
@@ -138,7 +139,6 @@ Mine.GL_stage = function(id){
 
       Mine.gl.activeTexture(Mine.gl.TEXTURE0);
       Mine.perror();
-      //console.log("What the fuck is this: "+target.texture.glTexture);
       Mine.gl.bindTexture(Mine.gl.TEXTURE_2D, target.texture.glTexture);
       Mine.perror();
       Mine.gl.uniform1i(gl_stage.program.samplerUniform, 0);
@@ -153,13 +153,20 @@ Mine.GL_stage = function(id){
         Mine.perror();
       }
       else if(target.shape.type == "ELEMENTS_TRIANGLES"){
-        console.log("Drawing elements");
+        //console.log("Drawing elements");
 
         //Indexes
         Mine.gl.bindBuffer(Mine.gl.ELEMENT_ARRAY_BUFFER, target.shape.iBuffer);
         Mine.perror();
         
         gl_stage.setUniforms();
+        var test = mat4.create();
+        test[0] = 16;
+        test[1] = 0;
+        test[2] = 13;
+        //console.log("Fucker: "+gl_stage.program.textureLocation);
+        gl_stage.gl.uniformMatrix4fv(gl_stage.program.textureLocation, false, test);
+
         Mine.gl.drawElements(Mine.gl.TRIANGLES, target.shape.iCount, Mine.gl.UNSIGNED_SHORT, 0);
         Mine.perror();
       }

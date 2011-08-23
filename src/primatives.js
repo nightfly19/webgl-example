@@ -204,8 +204,9 @@ Mine.Primatives.Cube = function(){
   Mine.gl.bufferData(Mine.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(cube.indexes), Mine.gl.STATIC_DRAW);
   Mine.perror();
 
-  //Fill the texture coordinates...
-  cube.texCoords = [
+  //Texture coordinates when all faces are the same.
+  cube.texTypes = {};
+  cube.texTypes.allSame = [
           // Front face
           0.0, 0.0,
           1.0, 0.0,
@@ -244,10 +245,6 @@ Mine.Primatives.Cube = function(){
 
   ];
 
-  Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, cube.tcBuffer);
-  Mine.perror();
-  Mine.gl.bufferData(Mine.gl.ARRAY_BUFFER, new Float32Array(cube.texCoords), Mine.gl.STATIC_DRAW);
-  Mine.perror();
   cube.tcCount = 24;
 
   //Color the cube
@@ -257,7 +254,13 @@ Mine.Primatives.Cube = function(){
   cube.type = "ELEMENTS_TRIANGLES";
   //cube.type = "TRIANGLE_STRIP";
 
-
+  cube.setTextureType = function(textureType){
+    Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, cube.tcBuffer);
+    Mine.perror();
+    Mine.gl.bufferData(Mine.gl.ARRAY_BUFFER, new Float32Array(textureType), Mine.gl.STATIC_DRAW);
+    Mine.perror();
+  };
+  cube.setTextureType(cube.texTypes.allSame);
   Mine.dm("Made a cube");
   return cube;
 }
