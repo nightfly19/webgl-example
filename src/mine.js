@@ -716,6 +716,9 @@ Mine.dm = function(message){
   }
   console.log(message);
 };
+
+
+
 // "Main" function :)
 $(document).ready(function(){
   //Create the WebGL stage.
@@ -733,7 +736,7 @@ $(document).ready(function(){
   shape.setPos([0, -1, -10]);
   //shape2.setTexIndex([8,13]);
   shape.act = function(){
-    shape.movePos([-0.1, 0, 0]);
+    shape.movePos([0.1, 0, 0]);
   };
   stage.add(shape);
   //Run the simulation.

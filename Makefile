@@ -6,4 +6,6 @@ source = src/mine.js
 
 .PHONY:
 all:
-	echo "This dont do much :)";
+	echo "Ensure hard links match";
+	rm $(filename)
+	ln $(source) $(filename)
