@@ -5,14 +5,14 @@ Mine.Blocks = {};
 
 Mine.Blocks.Block = function(){
   var block = new Mine.BasicShapes.Cube();
-  block._add_class(Mine.Blocks.Block);
+  block._addClass(Mine.Blocks.Block);
   return block;
 };
 
 
 Mine.Blocks.Air = function(){
   var air = new Mine.Blocks.Block();
-  air._add_class(Mine.Blocks.Air);
+  air._addClass(Mine.Blocks.Air);
   air.drawMe(false);
   return air
 };
@@ -21,7 +21,7 @@ Mine.Blocks.Air = function(){
 
 Mine.Blocks.Grass = function(){
   var grass = new Mine.Blocks.Block();
-  grass._add_class(Mine.Blocks.Grass);
+  grass._addClass(Mine.Blocks.Grass);
   grass.setTexIndex([0,15]);
   return grass;
 };
@@ -30,7 +30,7 @@ Mine.Blocks.Grass = function(){
 
 Mine.Blocks.Brick= function(){
   var brick= new Mine.Blocks.Block();
-  brick._add_class(Mine.Blocks.Brick);
+  brick._addClass(Mine.Blocks.Brick);
   brick.setTexIndex([8,13]);
   return brick;
 };
@@ -38,7 +38,7 @@ Mine.Blocks.Brick= function(){
 
 Mine.Blocks. Goomba = function(){
   var goomba= new Mine.Blocks.Block();
-  goomba._add_class(Mine.Blocks.Goomba);
+  goomba._addClass(Mine.Blocks.Goomba);
   goomba.shape = Mine.Primatives.Square();
   goomba.setTexIndex([12,14]);
   return goomba;

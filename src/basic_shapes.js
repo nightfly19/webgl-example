@@ -5,7 +5,7 @@ Mine.BasicShapes = {};
 
 Mine.BasicShapes.Square = function(){
   var square = Mine.Thing();
-  square._add_class(Mine.BasicShapes.Square);
+  square._addClass(Mine.BasicShapes.Square);
 
   square.shape = Mine.Primatives.Square();
   return square;
@@ -17,7 +17,7 @@ Mine.BasicShapes.Square = function(){
 
 Mine.BasicShapes.Cube= function(){
   var cube = Mine.Thing();
-  cube._add_class(Mine.BasicShapes.Cube);
+  cube._addClass(Mine.BasicShapes.Cube);
   if(!Mine.BasicShapes.Cube.cache){
     Mine.BasicShapes.Cube.cache = Mine.Primatives.Cube();
   }

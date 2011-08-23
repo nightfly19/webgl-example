@@ -11,12 +11,12 @@ Mine.Base = function(){
 
 
   //Adds a class to the list of classes the object is.
-  base._add_class = function(new_class){
+  base._addClass = function(new_class){
     this._classes.push(new_class);
   }
 
   //Returns if an object is a member of the given class.
-  base._is_a = function(class_name){
+  base._isA = function(class_name){
     for(a_class in this._classes){
 
       //If class is found in list, it is one.
@@ -30,7 +30,7 @@ Mine.Base = function(){
     return false;
   };
 
-  base._add_class(Mine.Base);
+  base._addClass(Mine.Base);
   return base;
 }
 

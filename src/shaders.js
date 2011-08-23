@@ -3,7 +3,7 @@
 
 Mine.ShaderProgram = function(shader_name){
   var shader = Mine.Base();
-  shader._add_class(Mine.ShaderProgram);
+  shader._addClass(Mine.ShaderProgram);
 
   var shader_location = Mine.RESOURCE_LOCATION+"/shaders/";
   shader.loaded = false;
@@ -25,7 +25,7 @@ Mine.ShaderProgram = function(shader_name){
                 //console.log("Fragment shader compiled");
 
                 //Build the shader program.
-                var gl = Mine.THE_ONE_GL_STAGE.gl;
+                var gl = Mine.stage.gl;
                 var shader_program = gl.createProgram();
                 //console.log(fragment_shader);
                 //console.log(vertex_shader);
@@ -61,7 +61,7 @@ Mine.ShaderProgram = function(shader_name){
   //This is one hairy bastard...
   shader.compile = function(shader_source,type){
     //console.log("Compiling shader");
-    var gl = Mine.THE_ONE_GL_STAGE.gl;
+    var gl = Mine.stage.gl;
     var new_shader;
 
     //Create the shader.

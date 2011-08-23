@@ -1,30 +1,30 @@
 //Stage begins here.
 
-Mine.GL_stage = function(id){
-  var gl_stage = Mine.Base();
-  gl_stage._add_class(Mine.Gl_stage);
+Mine.GLStage = function(id){
+  var glStage = Mine.Base();
+  glStage._addClass(Mine.Gl_stage);
 
   //Fields
-  gl_stage.canvas = null;
-  gl_stage.gl = null;
-  gl_stage.program = null;
-  gl_stage.actors = [];
-  gl_stage.mvMatrix = mat4.create();
-  gl_stage.pMatrix = mat4.create();
-  gl_stage.bgColor = Mine.Colors.fromInts([119, 187, 213, 255]);
-  gl_stage.fps = 1000/30;
-  gl_stage.interval = null;
+  glStage.canvas = null;
+  glStage.gl = null;
+  glStage.program = null;
+  glStage.actors = [];
+  glStage.mvMatrix = mat4.create();
+  glStage.pMatrix = mat4.create();
+  glStage.bgColor = Mine.Colors.fromInts([119, 187, 213, 255]);
+  glStage.fps = 1000/30;
+  glStage.interval = null;
 
   //Get the canvas.
-  gl_stage.canvas = document.getElementById(id);
+  glStage.canvas = document.getElementById(id);
 
   //Try and initialize WebGL.
   //try{
     Mine.dm("Initializing webgl");
-    gl_stage.gl = gl_stage.canvas.getContext("experimental-webgl");
-    Mine.gl = gl_stage.gl;
-    WebGLDebugUtils.init(Mine.gl);
-    Mine.perror();
+    glStage.gl = glStage.canvas.getContext("experimental-webgl");
+    Mine.stage = glStage;
+    WebGLDebugUtils.init(Mine.stage.gl);
+    Mine.Debug.perror();
   //}
   //catch(e){
   //  console.log("Failed to initialize webgl");
@@ -35,39 +35,39 @@ Mine.GL_stage = function(id){
 
 
   //Set the current shader program.
-  gl_stage.setProgram = function(active_program){
+  glStage.setProgram = function(active_program){
     Mine.dm("Setting shader");
-    gl_stage.program = active_program.program;
-    gl_stage.gl.useProgram(active_program.program);
-    Mine.perror();
+    glStage.program = active_program.program;
+    glStage.gl.useProgram(active_program.program);
+    Mine.Debug.perror();
 
     //Vertex position.
-    gl_stage.program.vertexPositionAttribute = gl_stage.gl.getAttribLocation(gl_stage.program, "aVertexPosition");
-    Mine.perror();
-    gl_stage.gl.enableVertexAttribArray(gl_stage.program.vertexPositionAttribute);
-    Mine.perror();
+    glStage.program.vertexPositionAttribute = glStage.gl.getAttribLocation(glStage.program, "aVertexPosition");
+    Mine.Debug.perror();
+    glStage.gl.enableVertexAttribArray(glStage.program.vertexPositionAttribute);
+    Mine.Debug.perror();
 
     //Vertex color.
-    //gl_stage.program.vertexColorAttribute = gl_stage.gl.getAttribLocation(gl_stage.program, "aVertexColor");
-    //Mine.perror();
-    //gl_stage.gl.enableVertexAttribArray(gl_stage.program.vertexColorAttribute);
-    //Mine.perror();
+    //glStage.program.vertexColorAttribute = glStage.gl.getAttribLocation(glStage.program, "aVertexColor");
+    //Mine.Debug.perror();
+    //glStage.gl.enableVertexAttribArray(glStage.program.vertexColorAttribute);
+    //Mine.Debug.perror();
 
     //Vertex texture coord
     Mine.dm("So I can get aTextureCoord?");
-    gl_stage.program.textureCoordAttribute = gl_stage.gl.getAttribLocation(gl_stage.program, "aTextureCoord");
-    Mine.perror();
-    gl_stage.gl.enableVertexAttribArray(gl_stage.program.textureCoordAttribute);
-    Mine.perror();
+    glStage.program.textureCoordAttribute = glStage.gl.getAttribLocation(glStage.program, "aTextureCoord");
+    Mine.Debug.perror();
+    glStage.gl.enableVertexAttribArray(glStage.program.textureCoordAttribute);
+    Mine.Debug.perror();
 
 
-    gl_stage.program.pMatrixUniform = gl_stage.gl.getUniformLocation(gl_stage.program,"uPMatrix");
-    Mine.perror();
-    gl_stage.program.mvMatrixUniform = gl_stage.gl.getUniformLocation(gl_stage.program,"uMVMatrix");
-    Mine.perror();
-    gl_stage.program.samplerUniform = gl_stage.gl.getUniformLocation(gl_stage.program,"uSampler");
-    gl_stage.program.textureLocation = gl_stage.gl.getUniformLocation(gl_stage.program,"textureLocation");
-    Mine.perror();
+    glStage.program.pMatrixUniform = glStage.gl.getUniformLocation(glStage.program,"uPMatrix");
+    Mine.Debug.perror();
+    glStage.program.mvMatrixUniform = glStage.gl.getUniformLocation(glStage.program,"uMVMatrix");
+    Mine.Debug.perror();
+    glStage.program.samplerUniform = glStage.gl.getUniformLocation(glStage.program,"uSampler");
+    glStage.program.textureLocation = glStage.gl.getUniformLocation(glStage.program,"textureLocation");
+    Mine.Debug.perror();
  
     Mine.dm("Setting shader done");
   };
@@ -75,103 +75,103 @@ Mine.GL_stage = function(id){
 
 
   //Set the uniforms.
-  gl_stage.setUniforms = function(){
+  glStage.setUniforms = function(){
     Mine.dm("Setting uniforms");
-    gl_stage.gl.uniformMatrix4fv(gl_stage.program.pMatrixUniform, false, gl_stage.pMatrix);
-    Mine.perror();
-    gl_stage.gl.uniformMatrix4fv(gl_stage.program.mvMatrixUniform, false, gl_stage.mvMatrix);
-    Mine.perror();
+    glStage.gl.uniformMatrix4fv(glStage.program.pMatrixUniform, false, glStage.pMatrix);
+    Mine.Debug.perror();
+    glStage.gl.uniformMatrix4fv(glStage.program.mvMatrixUniform, false, glStage.mvMatrix);
+    Mine.Debug.perror();
     Mine.dm("Uniforms set.");
   }
 
 
   //Clear the stage.
-  gl_stage.clear = function(){
+  glStage.clear = function(){
     Mine.dm("Clear the stage");
-    gl_stage.gl.clearColor(gl_stage.bgColor[0], 
-        gl_stage.bgColor[1], 
-        gl_stage.bgColor[2], 
-        gl_stage.bgColor[3] 
+    glStage.gl.clearColor(glStage.bgColor[0], 
+        glStage.bgColor[1], 
+        glStage.bgColor[2], 
+        glStage.bgColor[3] 
       );
-    gl_stage.gl.enable(gl_stage.gl.BLEND);
-    gl_stage.gl.enable(gl_stage.gl.DEPTH_TEST);
-    gl_stage.gl.blendFunc(gl_stage.gl.SRC_ALPHA, gl_stage.gl.ONE_MINUS_SRC_ALPHA);
-    Mine.perror();
-    gl_stage.gl.depthFunc(gl_stage.gl.LEQUAL);
-    Mine.perror();
-    gl_stage.gl.clear(gl_stage.gl.COLOR_BUFFER_BIT|gl_stage.gl.DEPTH_BUFFER_BIT);
-    Mine.perror();
+    glStage.gl.enable(glStage.gl.BLEND);
+    glStage.gl.enable(glStage.gl.DEPTH_TEST);
+    glStage.gl.blendFunc(glStage.gl.SRC_ALPHA, glStage.gl.ONE_MINUS_SRC_ALPHA);
+    Mine.Debug.perror();
+    glStage.gl.depthFunc(glStage.gl.LEQUAL);
+    Mine.Debug.perror();
+    glStage.gl.clear(glStage.gl.COLOR_BUFFER_BIT|glStage.gl.DEPTH_BUFFER_BIT);
+    Mine.Debug.perror();
     Mine.dm("Cleared the stage");
   };
 
 
 
-  gl_stage.draw = function(target){
+  glStage.draw = function(target){
     Mine.dm("Drawing something");
     //Reset the move matrix.
-    mat4.identity(gl_stage.mvMatrix);
+    mat4.identity(glStage.mvMatrix);
 
-    if(target && target._is_a(Mine.Thing)){
+    if(target && target._isA(Mine.Thing)){
       //console.log("Drawing a thing");
-      mat4.translate(gl_stage.mvMatrix, target.getPos());
+      mat4.translate(glStage.mvMatrix, target.getPos());
 
-      mat4.rotate(gl_stage.mvMatrix, target.getRot()[0], [1, 0, 0]);
-      mat4.rotate(gl_stage.mvMatrix, target.getRot()[1], [0, 1, 0]);
-      mat4.rotate(gl_stage.mvMatrix, target.getRot()[2], [0, 0, 1]);
+      mat4.rotate(glStage.mvMatrix, target.getRot()[0], [1, 0, 0]);
+      mat4.rotate(glStage.mvMatrix, target.getRot()[1], [0, 1, 0]);
+      mat4.rotate(glStage.mvMatrix, target.getRot()[2], [0, 0, 1]);
 
       //Vvertex.
-      Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, target.shape.vBuffer);
-      Mine.gl.vertexAttribPointer(gl_stage.program.vertexPositionAttribute, target.shape.vSize, Mine.gl.FLOAT, false, 0, 0);
+      Mine.stage.gl.bindBuffer(Mine.stage.gl.ARRAY_BUFFER, target.shape.vBuffer);
+      Mine.stage.gl.vertexAttribPointer(glStage.program.vertexPositionAttribute, target.shape.vSize, Mine.stage.gl.FLOAT, false, 0, 0);
 
       //Colors.
-      //Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, target.shape.cBuffer);
-      //Mine.perror();
-      //Mine.gl.vertexAttribPointer(gl_stage.program.vertexColorAttribute, target.shape.cSize, Mine.gl.FLOAT, false, 0, 0);
-      //Mine.perror();
+      //Mine.stage.gl.bindBuffer(Mine.stage.gl.ARRAY_BUFFER, target.shape.cBuffer);
+      //Mine.Debug.perror();
+      //Mine.stage.gl.vertexAttribPointer(glStage.program.vertexColorAttribute, target.shape.cSize, Mine.stage.gl.FLOAT, false, 0, 0);
+      //Mine.Debug.perror();
       
       //Texture stuff :)
       //console.log("Using texture: "+target.texture);
       //console.log("Using gltexture: "+target.texture.glTexture);
       //console.log( target.shape.tcBuffer);
       //console.log( target.shape.tcSize);
-      Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, target.shape.tcBuffer);
-      Mine.perror();
-      Mine.gl.vertexAttribPointer(gl_stage.program.textureCoordAttribute, target.shape.tcSize, Mine.gl.FLOAT, false, 0, 0);
-      Mine.perror();
+      Mine.stage.gl.bindBuffer(Mine.stage.gl.ARRAY_BUFFER, target.shape.tcBuffer);
+      Mine.Debug.perror();
+      Mine.stage.gl.vertexAttribPointer(glStage.program.textureCoordAttribute, target.shape.tcSize, Mine.stage.gl.FLOAT, false, 0, 0);
+      Mine.Debug.perror();
 
-      Mine.gl.activeTexture(Mine.gl.TEXTURE0);
-      Mine.perror();
-      Mine.gl.bindTexture(Mine.gl.TEXTURE_2D, gl_stage.texture.glTexture);
-      Mine.perror();
-      Mine.gl.uniform1i(gl_stage.program.samplerUniform, 0);
-      Mine.perror();
+      Mine.stage.gl.activeTexture(Mine.stage.gl.TEXTURE0);
+      Mine.Debug.perror();
+      Mine.stage.gl.bindTexture(Mine.stage.gl.TEXTURE_2D, glStage.texture.glTexture);
+      Mine.Debug.perror();
+      Mine.stage.gl.uniform1i(glStage.program.samplerUniform, 0);
+      Mine.Debug.perror();
 
       //Set the texture coordinates.
-      gl_stage.setUniforms();
+      glStage.setUniforms();
       var test = mat4.create();
-      test[0] = gl_stage.texture.devisions;
+      test[0] = glStage.texture.devisions;
       test[1] = target.textureLocation[0];
       test[2] = target.textureLocation[1];
-      //console.log("Fucker: "+gl_stage.program.textureLocation);
-      gl_stage.gl.uniformMatrix4fv(gl_stage.program.textureLocation, false, test);
+      //console.log("Fucker: "+glStage.program.textureLocation);
+      glStage.gl.uniformMatrix4fv(glStage.program.textureLocation, false, test);
   
       //Draw the shape.
 
       if(target.shape.type == "TRIANGLE_STRIP"){
-        gl_stage.setUniforms();
-        Mine.gl.drawArrays(Mine.gl.TRIANGLE_STRIP, 0, target.shape.vCount);
-        Mine.perror();
+        glStage.setUniforms();
+        Mine.stage.gl.drawArrays(Mine.stage.gl.TRIANGLE_STRIP, 0, target.shape.vCount);
+        Mine.Debug.perror();
       }
       else if(target.shape.type == "ELEMENTS_TRIANGLES"){
         //console.log("Drawing elements");
 
         //Indexes
-        Mine.gl.bindBuffer(Mine.gl.ELEMENT_ARRAY_BUFFER, target.shape.iBuffer);
-        Mine.perror();
+        Mine.stage.gl.bindBuffer(Mine.stage.gl.ELEMENT_ARRAY_BUFFER, target.shape.iBuffer);
+        Mine.Debug.perror();
         
 
-        Mine.gl.drawElements(Mine.gl.TRIANGLES, target.shape.iCount, Mine.gl.UNSIGNED_SHORT, 0);
-        Mine.perror();
+        Mine.stage.gl.drawElements(Mine.stage.gl.TRIANGLES, target.shape.iCount, Mine.stage.gl.UNSIGNED_SHORT, 0);
+        Mine.Debug.perror();
       }
       else{
         console.log("Not known type...");
@@ -180,58 +180,58 @@ Mine.GL_stage = function(id){
     Mine.dm("Drew something");
   };
 
-  gl_stage.add = function(new_actor){
-    gl_stage.actors.push(new_actor);
-    new_actor.stage = gl_stage;
+  glStage.add = function(new_actor){
+    glStage.actors.push(new_actor);
+    new_actor.stage = glStage;
   }
 
-  gl_stage.run = function(){
-    if(gl_stage.interval){
+  glStage.run = function(){
+    if(glStage.interval){
       return;
     }
 
-    Mine.gl.clearColor(0.0, 1.0, 0.0, 1.0);
-    Mine.perror();
-    Mine.gl.enable(Mine.gl.BLEND);
-    Mine.gl.enable(Mine.gl.DEPTH_TEST);
-    Mine.perror();
-    mat4.perspective(45, gl_stage.gl.viewportWidth / gl_stage.gl.viewportHeight, 0.1, 100.0, gl_stage.pMatrix);
-    Mine.perror();
-    gl_stage.interval = setInterval(function(){
-      gl_stage.clear();
+    Mine.stage.gl.clearColor(0.0, 1.0, 0.0, 1.0);
+    Mine.Debug.perror();
+    Mine.stage.gl.enable(Mine.stage.gl.BLEND);
+    Mine.stage.gl.enable(Mine.stage.gl.DEPTH_TEST);
+    Mine.Debug.perror();
+    mat4.perspective(45, glStage.gl.viewportWidth / glStage.gl.viewportHeight, 0.1, 100.0, glStage.pMatrix);
+    Mine.Debug.perror();
+    glStage.interval = setInterval(function(){
+      glStage.clear();
       //console.log("Hello");
 
-      for(actor in gl_stage.actors){
-        gl_stage.actors[actor].act();
+      for(actor in glStage.actors){
+        glStage.actors[actor].act();
         //console.log("\tMoo");
       }
-      for(actor in gl_stage.actors){
-        if(gl_stage.actors[actor].drawMe()){
-          gl_stage.draw(gl_stage.actors[actor]);
+      for(actor in glStage.actors){
+        if(glStage.actors[actor].drawMe()){
+          glStage.draw(glStage.actors[actor]);
         }
       }
-    },gl_stage.fps);
+    },glStage.fps);
 
   };
 
-  gl_stage.end = function(){
-    clearInterval(gl_stage.interval);
-    gl_stage.interval = null;
+  glStage.end = function(){
+    clearInterval(glStage.interval);
+    glStage.interval = null;
   }
 
 
   //Constructor stuff.
-  if(gl_stage.gl){
-    //gl_stage.clear();
-    gl_stage.gl.viewportWidth = gl_stage.canvas.width;
-    gl_stage.gl.viewportHeight = gl_stage.canvas.height;
+  if(glStage.gl){
+    //glStage.clear();
+    glStage.gl.viewportWidth = glStage.canvas.width;
+    glStage.gl.viewportHeight = glStage.canvas.height;
   }
   else{
     console.log("Failed somehow");
   }
 
-  Mine.THE_ONE_GL_STAGE = gl_stage;
-  return gl_stage;
+  Mine.stage = glStage;
+  return glStage;
 }
 
 

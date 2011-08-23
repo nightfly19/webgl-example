@@ -11,11 +11,13 @@ Mine.RESOURCE_LOCATION = "resources";
 #include "stage.js"
 #include "texture.js"
 
-Mine.debug = true;
-Mine.debug = false;
+Mine.Debug = {};
 
-Mine.perror = function(force){
-  if(!Mine.debug && !force){
+Mine.Debug.debug = true;
+Mine.Debug.debug = false;
+
+Mine.Debug.perror = function(force){
+  if(!Mine.Debug.debug && !force){
     return;
   }
 
@@ -28,7 +30,7 @@ Mine.perror = function(force){
     }
   }
   var err = getError();
-  var error = Mine.gl.getError();
+  var error = Mine.stage.gl.getError();
   var temp = err.stack;
   if(force || error != 0){
     console.log("Checking for errors "+(temp.split("\n")[4]));
@@ -40,7 +42,7 @@ Mine.perror = function(force){
 
 
 Mine.dm = function(message){
-  if(!Mine.debug){
+  if(!Mine.Debug.debug){
     return;
   }
 
@@ -52,7 +54,7 @@ Mine.dm = function(message){
 // "Main" function :)
 $(document).ready(function(){
   //Create the WebGL stage.
-  var stage = Mine.GL_stage("minedotjs");
+  var stage = Mine.GLStage("minedotjs");
   var shader = Mine.ShaderProgram("textured");
   var shape = Mine.Blocks.Goomba();
   //shape.drawMe(false);
@@ -60,7 +62,7 @@ $(document).ready(function(){
   var texture = Mine.Texture("terrain", 16, function(test){
     stage.texture = test;
   });
-    Mine.perror();
+    Mine.Debug.perror();
   
   shape.shape.setColor(Mine.Colors.indigo);
 

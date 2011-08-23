@@ -2,7 +2,7 @@
 #define THING_JS
 Mine.Thing = function(){
   var thing = Mine.Base();
-  thing._add_class(Mine.Thing);
+  thing._addClass(Mine.Thing);
   thing.position = [0,0,0];
   thing.rotation = [0,0,0];
   thing.size = [0,0,0];

@@ -2,7 +2,7 @@
 #define TEXTURE_JS
 Mine.Texture = function(texture_name, devisions, callback){
   var texture = Mine.Base();
-  texture._add_class(Mine.Texture);
+  texture._addClass(Mine.Texture);
   texture.devisions = devisions;
   Mine.dm("Creating a texture"); 
   //Check the cache first!.
@@ -11,28 +11,28 @@ Mine.Texture = function(texture_name, devisions, callback){
     return Mine.Texture.Cache[texture_name];
   }
 
-  texture.glTexture = Mine.gl.createTexture();
-  Mine.perror();
+  texture.glTexture = Mine.stage.gl.createTexture();
+  Mine.Debug.perror();
   texture.image = new Image();
   texture.image.onload = function(){
-    Mine.gl.bindTexture(Mine.gl.TEXTURE_2D, texture.glTexture);
-      Mine.perror();
-    Mine.gl.pixelStorei(Mine.gl.UNPACK_FLIP_Y_WEBGL, true);
-      Mine.perror();
-    Mine.gl.texImage2D(Mine.gl.TEXTURE_2D, 0, Mine.gl.RGBA, Mine.gl.RGBA,
-        Mine.gl.UNSIGNED_BYTE, 
+    Mine.stage.gl.bindTexture(Mine.stage.gl.TEXTURE_2D, texture.glTexture);
+      Mine.Debug.perror();
+    Mine.stage.gl.pixelStorei(Mine.stage.gl.UNPACK_FLIP_Y_WEBGL, true);
+      Mine.Debug.perror();
+    Mine.stage.gl.texImage2D(Mine.stage.gl.TEXTURE_2D, 0, Mine.stage.gl.RGBA, Mine.stage.gl.RGBA,
+        Mine.stage.gl.UNSIGNED_BYTE, 
         texture.image);
-      Mine.perror();
-    Mine.gl.texParameteri(Mine.gl.TEXTURE_2D, 
-        Mine.gl.TEXTURE_MAG_FILTER, 
-        Mine.gl.NEAREST);
-      Mine.perror();
-    Mine.gl.texParameteri(Mine.gl.TEXTURE_2D, 
-        Mine.gl.TEXTURE_MIN_FILTER, 
-        Mine.gl.NEAREST);
-      Mine.perror();
-    Mine.gl.bindTexture(Mine.gl.TEXTURE_2D,null);
-      Mine.perror();
+      Mine.Debug.perror();
+    Mine.stage.gl.texParameteri(Mine.stage.gl.TEXTURE_2D, 
+        Mine.stage.gl.TEXTURE_MAG_FILTER, 
+        Mine.stage.gl.NEAREST);
+      Mine.Debug.perror();
+    Mine.stage.gl.texParameteri(Mine.stage.gl.TEXTURE_2D, 
+        Mine.stage.gl.TEXTURE_MIN_FILTER, 
+        Mine.stage.gl.NEAREST);
+      Mine.Debug.perror();
+    Mine.stage.gl.bindTexture(Mine.stage.gl.TEXTURE_2D,null);
+      Mine.Debug.perror();
     Mine.dm("Texture created.");
     if(callback){
       //console.log(texture.glTexture);
