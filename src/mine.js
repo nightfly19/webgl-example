@@ -1,32 +1,31 @@
-//global JSLINT
-// jslint passfail: false, maxerr: 50000, indent 2
-
 var Mine = {};
-var console;
-console.log = function () {};
 Mine.RESOURCE_LOCATION = "resources";
 
 //Base class begins here.
 Mine.Base = function () {
 
-    var base = {}
+    var base = {};
 
     //Holds what classes the object is.
-    base._classes = new Array();
+    base.classes = [];
 
 
     //Adds a class to the list of classes the object is.
-    base._addClass = function (new_class) {
-        this._classes.push(new_class);
-    }
+    base.addClass = function (new_class) {
+        this.classes.push(new_class);
+    };
 
     //Returns if an object is a member of the given class.
-    base._isA = function (class_name) {
-        for(var a_class in this._classes) {
+    base.isA = function (class_name) {
+        var a_class;
+        for(a_class in this.classes) {
+            if(this.classes.hasOwnProperty(a_class)){
 
-            //If class is found in list, it is one.
-            if (class_name == this._classes[a_class]) {
-                return true;
+                //If class is found in list, it is one.
+                if (class_name === this.classes[a_class]) {
+                    return true;
+                 
+                }
             }
 
         }
@@ -35,9 +34,14 @@ Mine.Base = function () {
         return false;
     };
 
-    base._addClass(Mine.Base);
+    base.addClass(Mine.Base);
     return base;
-}
+};
+
+
+
+
+
 Mine.Colors = {
     white:[1.0, 1.0, 1.0, 1.0],
     red:[1.0, 0.0, 0.0, 1.0],
@@ -49,9 +53,12 @@ Mine.Colors = {
     violet:[1.0, 0.0, 1.0, 1.0],
     black:[0.0, 0.0, 0.0, 1.0],
     fromInts: function (ints) {
+        var i;
         var output = [];
-        for(var i in ints) {
-            output[i] = ints[i]/255.0;
+        for(i in ints) {
+            if(ints.hasOwnProperty(i)){
+                output[i] = ints[i]/255.0;
+            }
         }
         return output;
     }
@@ -59,7 +66,7 @@ Mine.Colors = {
 //Shaders begin here. 
 Mine.ShaderProgram = function (shader_name) {
     var shader = Mine.Base();
-    shader._addClass(Mine.ShaderProgram);
+    shader.addClass(Mine.ShaderProgram);
     var shader_location = Mine.RESOURCE_LOCATION+"/shaders/";
     shader.loaded = false;
     shader.failed = false;
@@ -113,11 +120,11 @@ Mine.ShaderProgram = function (shader_name) {
         var gl = Mine.stage.gl;
         var new_shader;
         //Create the shader.
-        if (type == "fragment") {
+        if (type === "fragment") {
             //console.log("Fragment shader");
             new_shader = gl.createShader(gl.FRAGMENT_SHADER);
         }
-        else if (type == "vertex") {
+        else if (type === "vertex") {
             //console.log("Vertex shader");
             new_shader = gl.createShader(gl.VERTEX_SHADER);
         }
@@ -134,9 +141,13 @@ Mine.ShaderProgram = function (shader_name) {
         else {
             return new_shader;
         }
-    }
+    };
+
+
+
     shader.waitFor = function (callback) {
-        var timer = setInterval(function () {
+        var timer;
+        timer = setInterval(function () {
             if (shader.failed) {
                 clearInterval(timer);
                 console.log("Shader failed to compile...");
@@ -157,7 +168,7 @@ Mine.Primatives.Types = ["TRIANGLE_STRIP"];
 Mine.Primatives.Primative = function () {
     Mine.dm("Creating a primative");
     var primative = Mine.Base();
-    primative._addClass(Mine.Primatives.Primative);
+    primative.addClass(Mine.Primatives.Primative);
     primative.vertices = [];
     primative.type = null;
     primative.vertices = [];
@@ -180,10 +191,11 @@ Mine.Primatives.Primative = function () {
     primative.tcSize = 2;
     primative.texCoords = [];
     primative.setColor = function (new_color) {
+        var i;
         if (!primative.colors) {
             primative.colors = new Array(primative.cCount * primative.cSize);
         }
-        for(var i = 0; i < primative.cCount * primative.cSize; i++) {
+        for(i = 0; i < primative.cCount * primative.cSize; i++) {
             primative.colors[i] = new_color[i%primative.cSize];
         }
         Mine.stage.gl.bindBuffer(Mine.stage.gl.ARRAY_BUFFER, primative.cBuffer);
@@ -196,7 +208,7 @@ Mine.Primatives.Primative = function () {
 };
 Mine.Primatives.Triangle = function () {
     var triangle = Mine.Primatives.Primative();
-    triangle._addClass(Mine.Primatives.Triangle);
+    triangle.addClass(Mine.Primatives.Triangle);
     //Filling the vBuffer.
     triangle.vertices = [
         0.0, 1.0, 0.0,
@@ -214,7 +226,7 @@ Mine.Primatives.Triangle = function () {
 };
 Mine.Primatives.Square = function () {
     var square = Mine.Primatives.Primative();
-    square._addClass(Mine.Primatives.Square);
+    square.addClass(Mine.Primatives.Square);
     square.vertices = [
         1.0, 1.0, 0.0,
         -1.0, 1.0, 0.0,
@@ -244,7 +256,7 @@ Mine.Primatives.Square = function () {
 };
 Mine.Primatives.Cube = function () {
     var cube = Mine.Primatives.Primative();
-    cube._addClass(Mine.Primatives.Cube);
+    cube.addClass(Mine.Primatives.Cube);
     Mine.dm("Making a cube");
     Mine.Debug.perror();
     //The vertices are coming!
@@ -349,10 +361,15 @@ Mine.Primatives.Cube = function () {
     cube.setTextureType(cube.texTypes.allSame);
     Mine.dm("Made a cube");
     return cube;
-}
+};
+
+
+
+
+
 Mine.Thing = function () {
     var thing = Mine.Base();
-    thing._addClass(Mine.Thing);
+    thing.addClass(Mine.Thing);
     thing.position = [0, 0, 0];
     thing.rotation = [0, 0, 0];
     thing.size = [0, 0, 0];
@@ -361,16 +378,19 @@ Mine.Thing = function () {
     thing.shape = null;
     thing.setTexIndex = function (new_index) {
         thing.textureLocation = new_index;
-    }
+    };
     thing.drawMe = function (change) {
-        if (arguments.length != 0) {
-            thing.needsDrawing = !!change
+        if (arguments.length !== 0) {
+            thing.needsDrawing = !!change;
         }
         return thing.needsDrawing;
     };
     thing.movePos = function (movement) {
-        for(var i in thing.position) {
-            thing.position[i] += movement[i];
+        var i;
+        for(i in thing.position) {
+            if(thing.position.hasOwnProperty(i)){
+                thing.position[i] += movement[i];
+            }
         }
     };
     thing.setPos = function (new_pos) {
@@ -383,8 +403,11 @@ Mine.Thing = function () {
         thing.rotation= new_rot;
     };
     thing.addRot = function (new_rot) {
-        for(var i in thing.rotation) {
-            thing.rotation[i] += new_rot[i];
+        var i;
+        for(i in thing.rotation) {
+            if(thing.rotation.hasOwnProperty(i)){
+                thing.rotation[i] += new_rot[i];
+            }
         }
     };
     thing.getSize = function () {
@@ -401,13 +424,13 @@ Mine.Thing = function () {
 Mine.BasicShapes = {};
 Mine.BasicShapes.Square = function () {
     var square = Mine.Thing();
-    square._addClass(Mine.BasicShapes.Square);
+    square.addClass(Mine.BasicShapes.Square);
     square.shape = Mine.Primatives.Square();
     return square;
 };
 Mine.BasicShapes.Cube= function () {
     var cube = Mine.Thing();
-    cube._addClass(Mine.BasicShapes.Cube);
+    cube.addClass(Mine.BasicShapes.Cube);
     if (!Mine.BasicShapes.Cube.cache) {
         Mine.BasicShapes.Cube.cache = Mine.Primatives.Cube();
     }
@@ -420,44 +443,50 @@ Mine.BasicShapes.Cube.cache = null;
 Mine.Blocks = {};
 Mine.Blocks.Block = function () {
     var block = new Mine.BasicShapes.Cube();
-    block._addClass(Mine.Blocks.Block);
+    block.addClass(Mine.Blocks.Block);
     return block;
 };
 Mine.Blocks.Air = function () {
     var air = new Mine.Blocks.Block();
-    air._addClass(Mine.Blocks.Air);
+    air.addClass(Mine.Blocks.Air);
     air.drawMe(false);
-    return air
+    return air;
 };
 Mine.Blocks.Grass = function () {
     var grass = new Mine.Blocks.Block();
-    grass._addClass(Mine.Blocks.Grass);
+    grass.addClass(Mine.Blocks.Grass);
     grass.setTexIndex([0, 15]);
     return grass;
 };
 Mine.Blocks.Brick= function () {
     var brick= new Mine.Blocks.Block();
-    brick._addClass(Mine.Blocks.Brick);
+    brick.addClass(Mine.Blocks.Brick);
     brick.setTexIndex([8, 13]);
     return brick;
 };
 Mine.Blocks. Goomba = function () {
     var goomba= new Mine.Blocks.Block();
-    goomba._addClass(Mine.Blocks.Goomba);
+    goomba.addClass(Mine.Blocks.Goomba);
     goomba.shape = Mine.Primatives.Square();
     goomba.setTexIndex([12, 14]);
     return goomba;
 };
+
+
+
 Mine.Blocks.types = {
-    "":Mine.Blocks.Air,
-    "":Mine.Blocks.Grass,
-    "":Mine.Blocks.Brick,
-    "":Mine.Blocks.Goomba,
+    "air":Mine.Blocks.Air,
+    "grass":Mine.Blocks.Grass,
+    "brick":Mine.Blocks.Brick,
+    "goomba":Mine.Blocks.Goomba
 };
+
+
+
 //Stage begins here.
 Mine.GLStage = function (id) {
     var glStage = Mine.Base();
-    glStage._addClass(Mine.Gl_stage);
+    glStage.addClass(Mine.Gl_stage);
     //Fields
     glStage.canvas = null;
     glStage.gl = null;
@@ -513,6 +542,9 @@ Mine.GLStage = function (id) {
         Mine.Debug.perror();
         Mine.dm("Setting shader done");
     };
+
+
+
     //Set the uniforms.
     glStage.setUniforms = function () {
         Mine.dm("Setting uniforms");
@@ -521,7 +553,10 @@ Mine.GLStage = function (id) {
         glStage.gl.uniformMatrix4fv(glStage.program.mvMatrixUniform, false, glStage.mvMatrix);
         Mine.Debug.perror();
         Mine.dm("Uniforms set.");
-    }
+    };
+
+
+
     //Clear the stage.
     glStage.clear = function () {
         Mine.dm("Clear the stage");
@@ -544,7 +579,7 @@ Mine.GLStage = function (id) {
         Mine.dm("Drawing something");
         //Reset the move matrix.
         mat4.identity(glStage.mvMatrix);
-        if (target && target._isA(Mine.Thing)) {
+        if (target && target.isA(Mine.Thing)) {
             //console.log("Drawing a thing");
             mat4.translate(glStage.mvMatrix, target.getPos());
             mat4.rotate(glStage.mvMatrix, target.getRot()[0], [1, 0, 0]);
@@ -582,12 +617,12 @@ Mine.GLStage = function (id) {
             //console.log("Fucker: "+glStage.program.textureLocation);
             glStage.gl.uniformMatrix4fv(glStage.program.textureLocation, false, test);
             //Draw the shape.
-            if (target.shape.type == "TRIANGLE_STRIP") {
+            if (target.shape.type === "TRIANGLE_STRIP") {
                 glStage.setUniforms();
                 Mine.stage.gl.drawArrays(Mine.stage.gl.TRIANGLE_STRIP, 0, target.shape.vCount);
                 Mine.Debug.perror();
             }
-            else if (target.shape.type == "ELEMENTS_TRIANGLES") {
+            else if (target.shape.type === "ELEMENTS_TRIANGLES") {
                 //console.log("Drawing elements");
                 //Indexes
                 Mine.stage.gl.bindBuffer(Mine.stage.gl.ELEMENT_ARRAY_BUFFER, target.shape.iBuffer);
@@ -604,7 +639,10 @@ Mine.GLStage = function (id) {
     glStage.add = function (new_actor) {
         glStage.actors.push(new_actor);
         new_actor.stage = glStage;
-    }
+    };
+
+
+
     glStage.run = function () {
         if (glStage.interval) {
             return;
@@ -617,23 +655,34 @@ Mine.GLStage = function (id) {
         mat4.perspective(45, glStage.gl.viewportWidth / glStage.gl.viewportHeight, 0.1, 100.0, glStage.pMatrix);
         Mine.Debug.perror();
         glStage.interval = setInterval(function () {
+            var actor;
             glStage.clear();
             //console.log("Hello");
-            for(var actor in glStage.actors) {
-                glStage.actors[actor].act();
-                //console.log("\tMoo");
+            for(actor in glStage.actors) {
+                if(glStage.actors.hasOwnProperty(actor)){
+                    glStage.actors[actor].act();
+                    //console.log("\tMoo");
+                }
             }
-            for(var actor in glStage.actors) {
-                if (glStage.actors[actor].drawMe()) {
-                    glStage.draw(glStage.actors[actor]);
+            for(actor in glStage.actors) {
+                if(glStage.actors.hasOwnProperty(actor)){
+                    if (glStage.actors[actor].drawMe()) {
+                        glStage.draw(glStage.actors[actor]);
+                    }
                 }
             }
         }, glStage.fps);
     };
+
+
+
     glStage.end = function () {
         clearInterval(glStage.interval);
         glStage.interval = null;
-    }
+    };
+
+
+
     //Constructor stuff.
     if (glStage.gl) {
         //glStage.clear();
@@ -645,10 +694,15 @@ Mine.GLStage = function (id) {
     }
     Mine.stage = glStage;
     return glStage;
-}
+};
+
+
+
+
+
 Mine.Texture = function (texture_name, devisions, callback) {
     var texture = Mine.Base();
-    texture._addClass(Mine.Texture);
+    texture.addClass(Mine.Texture);
     texture.devisions = devisions;
     Mine.dm("Creating a texture");
     //Check the cache first!.
@@ -685,11 +739,11 @@ Mine.Texture = function (texture_name, devisions, callback) {
         }
     };
     //texture.image.src = "http://localhost/~sage/minedotjs/resources/textures/kitten.png";
-    texture.image.src = Mine.Texture.TEXTURE_LOCATION+texture_name+".png"
-        //console.log(texture.image.src);
-        return texture;
+    texture.image.src = Mine.Texture.TEXTURE_LOCATION+texture_name+".png";
+    //console.log(texture.image.src);
+    return texture;
 };
-Mine.Texture.TEXTURE_LOCATION = Mine.RESOURCE_LOCATION+"/textures/"
+Mine.Texture.TEXTURE_LOCATION = Mine.RESOURCE_LOCATION+"/textures/";
 Mine.Texture.Cache = {};
 Mine.Debug = {};
 Mine.Debug.debug = true;
@@ -700,16 +754,17 @@ Mine.Debug.perror = function (force) {
     }
     var getError = function () {
         try{
-            throw Error('')
+            throw Error('');
         }
         catch(err) {
             return err;
         }
-    }
+    };
+
     var err = getError();
     var error = Mine.stage.gl.getError();
     var temp = err.stack;
-    if (force || error != 0) {
+    if (force || error !== 0) {
         console.log("Checking for errors "+(temp.split("\n")[4]));
         console.log("\t"+error);
         //console.log("\t"+WebGLDebugUtils.glEnumToString(error));
