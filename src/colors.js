@@ -10,6 +10,14 @@ Mine.Colors = {
   blue:[0.0, 0.0, 1.0, 1.0],
   indigo:[0.5, 0.0, 1.0, 1.0],
   violet:[1.0, 0.0, 1.0, 1.0],
-  black:[0.0, 0.0, 0.0, 1.0]
+  black:[0.0, 0.0, 0.0, 1.0],
+  fromInts: function(ints){
+    var output = [];
+    for(i in ints){
+      output[i] = ints[i]/255.0;
+    }
+
+    return output;
+  }
 };
 #endif

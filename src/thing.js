@@ -5,9 +5,17 @@ Mine.Thing = function(){
   thing._add_class(Mine.Thing);
   thing.position = [0,0,0];
   thing.rotation = [0,0,0];
+  thing.size = [0,0,0];
+  thing.textureLocation = [0,0];
 
   
   thing.shape = null;
+
+
+
+  thing.setTexIndex = function(new_index){
+    thing.textureLocation = new_index;
+  }
 
 
 
@@ -41,6 +49,11 @@ Mine.Thing = function(){
     for(i in thing.rotation){
       thing.rotation[i] += new_rot[i];
     }
+  };
+
+
+  thing.getSize = function(){
+    return thing.size;
   };
 
 

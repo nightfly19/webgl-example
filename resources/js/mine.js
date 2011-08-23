@@ -42,7 +42,14 @@ Mine.Colors = {
   blue:[0.0, 0.0, 1.0, 1.0],
   indigo:[0.5, 0.0, 1.0, 1.0],
   violet:[1.0, 0.0, 1.0, 1.0],
-  black:[0.0, 0.0, 0.0, 1.0]
+  black:[0.0, 0.0, 0.0, 1.0],
+  fromInts: function(ints){
+    var output = [];
+    for(i in ints){
+      output[i] = ints[i]/255.0;
+    }
+    return output;
+  }
 };
 //Shaders begin here. 
 Mine.ShaderProgram = function(shader_name){
@@ -216,9 +223,9 @@ Mine.Primatives.Square = function(){
   //TexCoords.
   square.texCoords = [
      1.0, 1.0, 0.0,
-    -1.0, 1.0, 0.0,
-     1.0, -1.0, 0.0,
-    -1.0, -1.0, 0.0
+    1.0, 1.0, 0.0,
+     0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0
     ];
   Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, square.tcBuffer);
   Mine.perror();
@@ -343,7 +350,12 @@ Mine.Thing = function(){
   thing._add_class(Mine.Thing);
   thing.position = [0,0,0];
   thing.rotation = [0,0,0];
+  thing.size = [0,0,0];
+  thing.textureLocation = [0,0];
   thing.shape = null;
+  thing.setTexIndex = function(new_index){
+    thing.textureLocation = new_index;
+  }
   thing.movePos = function(movement){
     for(i in thing.position){
       thing.position[i] += movement[i];
@@ -362,6 +374,9 @@ Mine.Thing = function(){
     for(i in thing.rotation){
       thing.rotation[i] += new_rot[i];
     }
+  };
+  thing.getSize = function(){
+    return thing.size;
   };
   thing.getRot = function(){
     return thing.rotation;
@@ -382,7 +397,27 @@ Mine.BasicShapes.Cube= function(){
   var cube = Mine.Thing();
   cube._add_class(Mine.BasicShapes.Cube);
   cube.shape = Mine.Primatives.Cube();
+  cube.size = [2,2,2];
   return cube;
+};
+Mine.Blocks = {};
+Mine.Blocks.Block = function(){
+  var block = new Mine.BasicShapes.Cube();
+  block._add_class(Mine.Blocks.Block);
+  return block;
+};
+Mine.Blocks.Grass = function(){
+  var grass = new Mine.Blocks.Block();
+  grass._add_class(Mine.Blocks.Grass);
+  grass.setTexIndex([0,15]);
+  return grass;
+};
+Mine.Blocks.Goomba= function(){
+  var goomba= new Mine.Blocks.Block();
+  goomba._add_class(Mine.Blocks.Goomba);
+  goomba.shape = Mine.Primatives.Square();
+  goomba.setTexIndex([12,14]);
+  return goomba;
 };
 //Stage begins here.
 Mine.GL_stage = function(id){
@@ -395,8 +430,8 @@ Mine.GL_stage = function(id){
   gl_stage.actors = [];
   gl_stage.mvMatrix = mat4.create();
   gl_stage.pMatrix = mat4.create();
-  gl_stage.bgColor = Mine.Colors.black;
-  gl_stage.fps = 1000/30;
+  gl_stage.bgColor = Mine.Colors.fromInts([119, 187, 213, 255]);
+  gl_stage.fps = 1000/5;
   gl_stage.interval = null;
   //Get the canvas.
   gl_stage.canvas = document.getElementById(id);
@@ -497,10 +532,18 @@ Mine.GL_stage = function(id){
       Mine.perror();
       Mine.gl.activeTexture(Mine.gl.TEXTURE0);
       Mine.perror();
-      Mine.gl.bindTexture(Mine.gl.TEXTURE_2D, target.texture.glTexture);
+      Mine.gl.bindTexture(Mine.gl.TEXTURE_2D, gl_stage.texture.glTexture);
       Mine.perror();
       Mine.gl.uniform1i(gl_stage.program.samplerUniform, 0);
       Mine.perror();
+      //Set the texture coordinates.
+      gl_stage.setUniforms();
+      var test = mat4.create();
+      test[0] = gl_stage.texture.devisions;
+      test[1] = target.textureLocation[0];
+      test[2] = target.textureLocation[1];
+      //console.log("Fucker: "+gl_stage.program.textureLocation);
+      gl_stage.gl.uniformMatrix4fv(gl_stage.program.textureLocation, false, test);
       //Draw the shape.
       if(target.shape.type == "TRIANGLE_STRIP"){
         gl_stage.setUniforms();
@@ -512,13 +555,6 @@ Mine.GL_stage = function(id){
         //Indexes
         Mine.gl.bindBuffer(Mine.gl.ELEMENT_ARRAY_BUFFER, target.shape.iBuffer);
         Mine.perror();
-        gl_stage.setUniforms();
-        var test = mat4.create();
-        test[0] = 16;
-        test[1] = 0;
-        test[2] = 13;
-        //console.log("Fucker: "+gl_stage.program.textureLocation);
-        gl_stage.gl.uniformMatrix4fv(gl_stage.program.textureLocation, false, test);
         Mine.gl.drawElements(Mine.gl.TRIANGLES, target.shape.iCount, Mine.gl.UNSIGNED_SHORT, 0);
         Mine.perror();
       }
@@ -544,8 +580,10 @@ Mine.GL_stage = function(id){
     Mine.perror();
     gl_stage.interval = setInterval(function(){
       gl_stage.clear();
+      //console.log("Hello");
       for(actor in gl_stage.actors){
         gl_stage.actors[actor].act();
+        //console.log("\tMoo");
       }
       for(actor in gl_stage.actors){
         gl_stage.draw(gl_stage.actors[actor]);
@@ -568,9 +606,10 @@ Mine.GL_stage = function(id){
   Mine.THE_ONE_GL_STAGE = gl_stage;
   return gl_stage;
 }
-Mine.Texture = function(texture_name,callback){
+Mine.Texture = function(texture_name, devisions, callback){
   var texture = Mine.Base();
   texture._add_class(Mine.Texture);
+  texture.devisions = devisions;
   Mine.dm("Creating a texture");
   //Check the cache first!.
   if(Mine.Texture.Cache[texture_name]){
@@ -646,19 +685,37 @@ $(document).ready(function(){
   //Create the WebGL stage.
   var stage = Mine.GL_stage("minedotjs");
   var shader = Mine.ShaderProgram("textured");
-  var shape = Mine.BasicShapes.Cube();
+  var shape = Mine.Blocks.Grass();
+  var shape2 = Mine.Blocks.Grass();
+  var shape3 = Mine.Blocks.Grass();
+  var shape3 = Mine.Blocks.Grass();
+  var shape4 = Mine.Blocks.Goomba();
   Mine.dm("Creating a texture");
-  var texture = Mine.Texture("terrain",function(test){
-    shape.texture = test;
+  var texture = Mine.Texture("terrain", 16, function(test){
+    stage.texture = test;
   });
     Mine.perror();
   shape.shape.setColor(Mine.Colors.indigo);
   //shape.addRot([0.5, 0.0, 0.0]);
+  shape.setPos([0, -2, -10]);
+  //shape2.setTexIndex([8,13]);
+  shape2.setPos([-2, -2, -10]);
+  shape3.setPos([2, -2, -10]);
+  shape3.setPos([2, -2, -10]);
+  shape4.setPos([2, 0, -10]);
   shape.act = function(){
-    shape.setPos([0, 0, -10]);
-    shape.addRot([0.0, 0.05, 0.00]);
+    //shape.addRot([0.0, 0.05, 0.00]);
+  };
+  shape2.act = function(){
+    //shape2.addRot([0.0, 0.05, 0.00]);
+  };
+  shape4.act = function(){
+    //shape4.addRot([0.0, 0.05, 0.00]);
   };
   stage.add(shape);
+  stage.add(shape2);
+  stage.add(shape3);
+  stage.add(shape4);
   //Run the simulation.
   shader.waitFor(function(){
     stage.setProgram(shader);

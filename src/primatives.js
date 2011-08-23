@@ -111,9 +111,9 @@ Mine.Primatives.Square = function(){
   //TexCoords.
   square.texCoords = [
      1.0,  1.0,  0.0,
-    -1.0,  1.0,  0.0,
-     1.0, -1.0,  0.0,
-    -1.0, -1.0,  0.0
+    1.0,  1.0,  0.0,
+     0.0, 0.0,  0.0,
+    0.0, 0.0,  0.0
     ];
   Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, square.tcBuffer);
   Mine.perror();

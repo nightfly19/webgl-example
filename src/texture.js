@@ -1,8 +1,9 @@
 #ifndef TEXTURE_JS
 #define TEXTURE_JS
-Mine.Texture = function(texture_name,callback){
+Mine.Texture = function(texture_name, devisions, callback){
   var texture = Mine.Base();
   texture._add_class(Mine.Texture);
+  texture.devisions = devisions;
   Mine.dm("Creating a texture"); 
   //Check the cache first!.
   if(Mine.Texture.Cache[texture_name]){

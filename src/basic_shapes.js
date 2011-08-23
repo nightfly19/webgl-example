@@ -20,6 +20,7 @@ Mine.BasicShapes.Cube= function(){
   cube._add_class(Mine.BasicShapes.Cube);
 
   cube.shape = Mine.Primatives.Cube();
+  cube.size = [2,2,2];
   return cube;
 };
 
