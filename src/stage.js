@@ -12,7 +12,7 @@ Mine.GL_stage = function(id){
   gl_stage.mvMatrix = mat4.create();
   gl_stage.pMatrix = mat4.create();
   gl_stage.bgColor = Mine.Colors.fromInts([119, 187, 213, 255]);
-  gl_stage.fps = 1000/5;
+  gl_stage.fps = 1000/30;
   gl_stage.interval = null;
 
   //Get the canvas.
@@ -93,7 +93,9 @@ Mine.GL_stage = function(id){
         gl_stage.bgColor[2], 
         gl_stage.bgColor[3] 
       );
+    gl_stage.gl.enable(gl_stage.gl.BLEND);
     gl_stage.gl.enable(gl_stage.gl.DEPTH_TEST);
+    gl_stage.gl.blendFunc(gl_stage.gl.SRC_ALPHA, gl_stage.gl.ONE_MINUS_SRC_ALPHA);
     Mine.perror();
     gl_stage.gl.depthFunc(gl_stage.gl.LEQUAL);
     Mine.perror();
@@ -190,6 +192,7 @@ Mine.GL_stage = function(id){
 
     Mine.gl.clearColor(0.0, 1.0, 0.0, 1.0);
     Mine.perror();
+    Mine.gl.enable(Mine.gl.BLEND);
     Mine.gl.enable(Mine.gl.DEPTH_TEST);
     Mine.perror();
     mat4.perspective(45, gl_stage.gl.viewportWidth / gl_stage.gl.viewportHeight, 0.1, 100.0, gl_stage.pMatrix);
@@ -203,7 +206,9 @@ Mine.GL_stage = function(id){
         //console.log("\tMoo");
       }
       for(actor in gl_stage.actors){
-        gl_stage.draw(gl_stage.actors[actor]);
+        if(gl_stage.actors[actor].drawMe()){
+          gl_stage.draw(gl_stage.actors[actor]);
+        }
       }
     },gl_stage.fps);
 

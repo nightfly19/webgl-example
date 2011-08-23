@@ -352,10 +352,17 @@ Mine.Thing = function(){
   thing.rotation = [0,0,0];
   thing.size = [0,0,0];
   thing.textureLocation = [0,0];
+  thing.needsDrawing= true;
   thing.shape = null;
   thing.setTexIndex = function(new_index){
     thing.textureLocation = new_index;
   }
+  thing.drawMe = function(change){
+    if(arguments.length != 0){
+      thing.needsDrawing = !!change
+    }
+    return thing.needsDrawing;
+  };
   thing.movePos = function(movement){
     for(i in thing.position){
       thing.position[i] += movement[i];
@@ -382,7 +389,7 @@ Mine.Thing = function(){
     return thing.rotation;
   };
   thing.act = function(){
-    console.log("I'm empty...");
+    //console.log("I'm empty...");
   };
   return thing;
 };
@@ -396,15 +403,26 @@ Mine.BasicShapes.Square = function(){
 Mine.BasicShapes.Cube= function(){
   var cube = Mine.Thing();
   cube._add_class(Mine.BasicShapes.Cube);
-  cube.shape = Mine.Primatives.Cube();
-  cube.size = [2,2,2];
+  if(!Mine.BasicShapes.Cube.cache){
+    Mine.BasicShapes.Cube.cache = Mine.Primatives.Cube();
+  }
+  cube.shape = Mine.BasicShapes.Cube.cache;
+  cube.size = Mine.BasicShapes.Cube.size;
   return cube;
 };
+Mine.BasicShapes.Cube.size = [2,2,2];
+Mine.BasicShapes.Cube.cache = null;
 Mine.Blocks = {};
 Mine.Blocks.Block = function(){
   var block = new Mine.BasicShapes.Cube();
   block._add_class(Mine.Blocks.Block);
   return block;
+};
+Mine.Blocks.Air = function(){
+  var air = new Mine.Blocks.Block();
+  air._add_class(Mine.Blocks.Air);
+  air.drawMe(false);
+  return air
 };
 Mine.Blocks.Grass = function(){
   var grass = new Mine.Blocks.Block();
@@ -412,12 +430,24 @@ Mine.Blocks.Grass = function(){
   grass.setTexIndex([0,15]);
   return grass;
 };
-Mine.Blocks.Goomba= function(){
+Mine.Blocks.Brick= function(){
+  var brick= new Mine.Blocks.Block();
+  brick._add_class(Mine.Blocks.Brick);
+  brick.setTexIndex([8,13]);
+  return brick;
+};
+Mine.Blocks. Goomba = function(){
   var goomba= new Mine.Blocks.Block();
   goomba._add_class(Mine.Blocks.Goomba);
   goomba.shape = Mine.Primatives.Square();
   goomba.setTexIndex([12,14]);
   return goomba;
+};
+Mine.Blocks.types = {
+  "":Mine.Blocks.Air,
+  "":Mine.Blocks.Grass,
+  "":Mine.Blocks.Brick,
+  "":Mine.Blocks.Goomba,
 };
 //Stage begins here.
 Mine.GL_stage = function(id){
@@ -431,7 +461,7 @@ Mine.GL_stage = function(id){
   gl_stage.mvMatrix = mat4.create();
   gl_stage.pMatrix = mat4.create();
   gl_stage.bgColor = Mine.Colors.fromInts([119, 187, 213, 255]);
-  gl_stage.fps = 1000/5;
+  gl_stage.fps = 1000/30;
   gl_stage.interval = null;
   //Get the canvas.
   gl_stage.canvas = document.getElementById(id);
@@ -495,7 +525,9 @@ Mine.GL_stage = function(id){
         gl_stage.bgColor[2],
         gl_stage.bgColor[3]
       );
+    gl_stage.gl.enable(gl_stage.gl.BLEND);
     gl_stage.gl.enable(gl_stage.gl.DEPTH_TEST);
+    gl_stage.gl.blendFunc(gl_stage.gl.SRC_ALPHA, gl_stage.gl.ONE_MINUS_SRC_ALPHA);
     Mine.perror();
     gl_stage.gl.depthFunc(gl_stage.gl.LEQUAL);
     Mine.perror();
@@ -574,6 +606,7 @@ Mine.GL_stage = function(id){
     }
     Mine.gl.clearColor(0.0, 1.0, 0.0, 1.0);
     Mine.perror();
+    Mine.gl.enable(Mine.gl.BLEND);
     Mine.gl.enable(Mine.gl.DEPTH_TEST);
     Mine.perror();
     mat4.perspective(45, gl_stage.gl.viewportWidth / gl_stage.gl.viewportHeight, 0.1, 100.0, gl_stage.pMatrix);
@@ -586,7 +619,9 @@ Mine.GL_stage = function(id){
         //console.log("\tMoo");
       }
       for(actor in gl_stage.actors){
-        gl_stage.draw(gl_stage.actors[actor]);
+        if(gl_stage.actors[actor].drawMe()){
+          gl_stage.draw(gl_stage.actors[actor]);
+        }
       }
     },gl_stage.fps);
   };
@@ -685,11 +720,8 @@ $(document).ready(function(){
   //Create the WebGL stage.
   var stage = Mine.GL_stage("minedotjs");
   var shader = Mine.ShaderProgram("textured");
-  var shape = Mine.Blocks.Grass();
-  var shape2 = Mine.Blocks.Grass();
-  var shape3 = Mine.Blocks.Grass();
-  var shape3 = Mine.Blocks.Grass();
-  var shape4 = Mine.Blocks.Goomba();
+  var shape = Mine.Blocks.Goomba();
+  //shape.drawMe(false);
   Mine.dm("Creating a texture");
   var texture = Mine.Texture("terrain", 16, function(test){
     stage.texture = test;
@@ -697,25 +729,12 @@ $(document).ready(function(){
     Mine.perror();
   shape.shape.setColor(Mine.Colors.indigo);
   //shape.addRot([0.5, 0.0, 0.0]);
-  shape.setPos([0, -2, -10]);
+  shape.setPos([0, -1, -10]);
   //shape2.setTexIndex([8,13]);
-  shape2.setPos([-2, -2, -10]);
-  shape3.setPos([2, -2, -10]);
-  shape3.setPos([2, -2, -10]);
-  shape4.setPos([2, 0, -10]);
   shape.act = function(){
-    //shape.addRot([0.0, 0.05, 0.00]);
-  };
-  shape2.act = function(){
-    //shape2.addRot([0.0, 0.05, 0.00]);
-  };
-  shape4.act = function(){
-    //shape4.addRot([0.0, 0.05, 0.00]);
+    shape.movePos([-0.1, 0, 0]);
   };
   stage.add(shape);
-  stage.add(shape2);
-  stage.add(shape3);
-  stage.add(shape4);
   //Run the simulation.
   shader.waitFor(function(){
     stage.setProgram(shader);
@@ -727,5 +746,5 @@ $(document).ready(function(){
   setTimeout(function(){
     stage.end();
     Mine.dm("Stoping the stage.");
-  },500000);
+  },5000);
 });

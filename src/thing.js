@@ -7,6 +7,7 @@ Mine.Thing = function(){
   thing.rotation = [0,0,0];
   thing.size = [0,0,0];
   thing.textureLocation = [0,0];
+  thing.needsDrawing= true;
 
   
   thing.shape = null;
@@ -16,6 +17,16 @@ Mine.Thing = function(){
   thing.setTexIndex = function(new_index){
     thing.textureLocation = new_index;
   }
+
+
+  
+  thing.drawMe = function(change){
+    if(arguments.length != 0){
+      thing.needsDrawing = !!change
+    }
+
+    return thing.needsDrawing;
+  };
 
 
 
@@ -63,7 +74,7 @@ Mine.Thing = function(){
   };
 
   thing.act = function(){
-    console.log("I'm empty...");
+    //console.log("I'm empty...");
   };
 
   return thing;
