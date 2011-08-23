@@ -213,6 +213,17 @@ Mine.Primatives.Square = function(){
   //Creating and filling the buffer.
   Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER,square.vBuffer);
   Mine.gl.bufferData(Mine.gl.ARRAY_BUFFER, new Float32Array(square.vertices), Mine.gl.STATIC_DRAW);
+  //TexCoords.
+  square.texCoords = [
+     1.0, 1.0, 0.0,
+    -1.0, 1.0, 0.0,
+     1.0, -1.0, 0.0,
+    -1.0, -1.0, 0.0
+    ];
+  Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, square.tcBuffer);
+  Mine.perror();
+  Mine.gl.bufferData(Mine.gl.ARRAY_BUFFER, new Float32Array(square.texCoords), Mine.gl.STATIC_DRAW);
+  Mine.perror();
   //Color the square
   square.cCount= square.vCount;
   square.setColor([1.0,1.0,1.0,1.0]);
@@ -226,36 +237,36 @@ Mine.Primatives.Cube = function(){
   Mine.perror();
   //The vertices are coming!
   cube.vertices = [
-    //Front..
-    -1.0, -1.0, 1.0,
-     1.0, -1.0, 1.0,
-     1.0, 1.0, 1.0,
-    -1.0, 1.0, 1.0,
-    //Back
-    -1.0, -1.0, -1.0,
-    -1.0, 1.0, -1.0,
-     1.0, 1.0, -1.0,
-     1.0, -1.0, -1.0,
-    //Top
-    -1.0, 1.0, -1.0,
-    -1.0, 1.0, 1.0,
-     1.0, 1.0, 1.0,
-     1.0, 1.0, -1.0,
-    //Bottom
-    -1.0, -1.0, -1.0,
-     1.0, -1.0, -1.0,
-     1.0, -1.0, 1.0,
-    -1.0, -1.0, 1.0,
-    //Right
-     1.0, -1.0, -1.0,
-     1.0, 1.0, -1.0,
-     1.0, 1.0, 1.0,
-     1.0, -1.0, 1.0,
-    //Left
-    -1.0, -1.0, -1.0,
-    -1.0, -1.0, 1.0,
-    -1.0, 1.0, 1.0,
-    -1.0, 1.0, -1.0
+            // Front face
+            -1.0, -1.0, 1.0,
+             1.0, -1.0, 1.0,
+             1.0, 1.0, 1.0,
+            -1.0, 1.0, 1.0,
+            // Back face
+            -1.0, -1.0, -1.0,
+            -1.0, 1.0, -1.0,
+             1.0, 1.0, -1.0,
+             1.0, -1.0, -1.0,
+            // Top face
+            -1.0, 1.0, -1.0,
+            -1.0, 1.0, 1.0,
+             1.0, 1.0, 1.0,
+             1.0, 1.0, -1.0,
+            // Bottom face
+            -1.0, -1.0, -1.0,
+             1.0, -1.0, -1.0,
+             1.0, -1.0, 1.0,
+            -1.0, -1.0, 1.0,
+            // Right face
+             1.0, -1.0, -1.0,
+             1.0, 1.0, -1.0,
+             1.0, 1.0, 1.0,
+             1.0, -1.0, 1.0,
+            // Left face
+            -1.0, -1.0, -1.0,
+            -1.0, -1.0, 1.0,
+            -1.0, 1.0, 1.0,
+            -1.0, 1.0, -1.0,
   ];
   cube.vCount = 24;
   //Filling the vertex buffer.
@@ -265,12 +276,12 @@ Mine.Primatives.Cube = function(){
   Mine.perror();
   //Fill the index buffer.
   cube.indexes = [
-    0, 1, 2, 0, 2, 3, //Front
-    4, 5, 6, 4, 6, 7, //Back
-    8, 9, 10, 8, 10, 11, //Top
-    12, 13, 14, 12, 14, 15, //Bottom
-    16, 17, 18, 16, 18, 19, //Right
-    20, 21, 22, 20, 22, 23 //Left
+            0, 1, 2, 0, 2, 3, // Front face
+            4, 5, 6, 4, 6, 7, // Back face
+            8, 9, 10, 8, 10, 11, // Top face
+            12, 13, 14, 12, 14, 15, // Bottom face
+            16, 17, 18, 16, 18, 19, // Right face
+            20, 21, 22, 20, 22, 23 // Left face
   ];
   cube.iCount = 36;
   Mine.gl.bindBuffer(Mine.gl.ELEMENT_ARRAY_BUFFER,cube.iBuffer);
@@ -279,36 +290,36 @@ Mine.Primatives.Cube = function(){
   Mine.perror();
   //Fill the texture coordinates...
   cube.texCoords = [
-    //Front
-    0.0, 0.0,
-    1.0, 0.0,
-    1.0, 1.0,
-    0.0, 1.0,
-    //Back
-    1.0, 0.0,
-    1.0, 1.0,
-    0.0, 1.0,
-    0.0, 0.0,
-    //Top
-    0.0, 1.0,
-    0.0, 0.0,
-    1.0, 0.0,
-    1.0, 1.0,
-    //Bottom
-    1.0, 1.0,
-    0.0, 1.0,
-    0.0, 0.0,
-    1.0, 0.0,
-    //Right
-    1.0, 0.0,
-    1.0, 1.0,
-    0.0, 1.0,
-    0.0, 0.0,
-    //Left
-    0.0, 0.0,
-    1.0, 0.0,
-    1.0, 1.0,
-    0.0, 1.0
+          // Front face
+          0.0, 0.0,
+          1.0, 0.0,
+          1.0, 1.0,
+          0.0, 1.0,
+          // Back face
+          1.0, 0.0,
+          1.0, 1.0,
+          0.0, 1.0,
+          0.0, 0.0,
+          // Top face
+          0.0, 1.0,
+          0.0, 0.0,
+          1.0, 0.0,
+          1.0, 1.0,
+          // Bottom face
+          1.0, 1.0,
+          0.0, 1.0,
+          0.0, 0.0,
+          1.0, 0.0,
+          // Right face
+          1.0, 0.0,
+          1.0, 1.0,
+          0.0, 1.0,
+          0.0, 0.0,
+          // Left face
+          0.0, 0.0,
+          1.0, 0.0,
+          1.0, 1.0,
+          0.0, 1.0,
   ];
   Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, cube.tcBuffer);
   Mine.perror();
@@ -409,22 +420,22 @@ Mine.GL_stage = function(id){
     gl_stage.gl.enableVertexAttribArray(gl_stage.program.vertexPositionAttribute);
     Mine.perror();
     //Vertex color.
-    gl_stage.program.vertexColorAttribute = gl_stage.gl.getAttribLocation(gl_stage.program, "aVertexColor");
-    Mine.perror();
-    gl_stage.gl.enableVertexAttribArray(gl_stage.program.vertexColorAttribute);
-    Mine.perror();
+    //gl_stage.program.vertexColorAttribute = gl_stage.gl.getAttribLocation(gl_stage.program, "aVertexColor");
+    //Mine.perror();
+    //gl_stage.gl.enableVertexAttribArray(gl_stage.program.vertexColorAttribute);
+    //Mine.perror();
     //Vertex texture coord
-    //Mine.dm("So I can get aTextureCoord?");
-    //gl_stage.program.textureCoordAttribute = gl_stage.gl.getAttribLocation(gl_stage.program, "aTextureCoord");
-    //Mine.perror();
-    //gl_stage.gl.enableVertexAttribArray(gl_stage.program.textureCoordAttribute);
-    //Mine.perror();
+    Mine.dm("So I can get aTextureCoord?");
+    gl_stage.program.textureCoordAttribute = gl_stage.gl.getAttribLocation(gl_stage.program, "aTextureCoord");
+    Mine.perror();
+    gl_stage.gl.enableVertexAttribArray(gl_stage.program.textureCoordAttribute);
+    Mine.perror();
     gl_stage.program.pMatrixUniform = gl_stage.gl.getUniformLocation(gl_stage.program,"uPMatrix");
     Mine.perror();
     gl_stage.program.mvMatrixUniform = gl_stage.gl.getUniformLocation(gl_stage.program,"uMVMatrix");
     Mine.perror();
-    //gl_stage.program.samplerUniform = gl_stage.gl.getUniformLocation(gl_stage.program,"uSampler");
-    //Mine.perror();
+    gl_stage.program.samplerUniform = gl_stage.gl.getUniformLocation(gl_stage.program,"uSampler");
+    Mine.perror();
     Mine.dm("Setting shader done");
   };
   //Set the uniforms.
@@ -466,10 +477,10 @@ Mine.GL_stage = function(id){
       Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, target.shape.vBuffer);
       Mine.gl.vertexAttribPointer(gl_stage.program.vertexPositionAttribute, target.shape.vSize, Mine.gl.FLOAT, false, 0, 0);
       //Colors.
-      Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, target.shape.cBuffer);
-      Mine.perror();
-      Mine.gl.vertexAttribPointer(gl_stage.program.vertexColorAttribute, target.shape.cSize, Mine.gl.FLOAT, false, 0, 0);
-      Mine.perror();
+      //Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, target.shape.cBuffer);
+      //Mine.perror();
+      //Mine.gl.vertexAttribPointer(gl_stage.program.vertexColorAttribute, target.shape.cSize, Mine.gl.FLOAT, false, 0, 0);
+      //Mine.perror();
       //Texture stuff :)
       //console.log("Using texture: "+target.texture);
       //console.log("Using gltexture: "+target.texture.glTexture);
@@ -477,13 +488,14 @@ Mine.GL_stage = function(id){
       //console.log( target.shape.tcSize);
       Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, target.shape.tcBuffer);
       Mine.perror();
-      //Mine.gl.vertexAttribPointer(gl_stage.program.textureCoordAttribute, target.shape.tcSize, Mine.gl.FLOAT, false, 0, 0);
+      Mine.gl.vertexAttribPointer(gl_stage.program.textureCoordAttribute, target.shape.tcSize, Mine.gl.FLOAT, false, 0, 0);
       Mine.perror();
-      //Mine.gl.activeTexture(Mine.gl.TEXTURE0);
+      Mine.gl.activeTexture(Mine.gl.TEXTURE0);
       Mine.perror();
-      //Mine.gl.bindTexture(Mine.gl.TEXTURE_2D, target.texture.glTexture);
+      //console.log("What the fuck is this: "+target.texture.glTexture);
+      Mine.gl.bindTexture(Mine.gl.TEXTURE_2D, target.texture.glTexture);
       Mine.perror();
-      //Mine.gl.uniform1i(gl_stage.program.samplerUniform, 0);
+      Mine.gl.uniform1i(gl_stage.program.samplerUniform, 0);
       Mine.perror();
       //Draw the shape.
       if(target.shape.type == "TRIANGLE_STRIP"){
@@ -572,7 +584,7 @@ Mine.Texture = function(texture_name,callback){
         Mine.gl.NEAREST);
       Mine.perror();
     Mine.gl.texParameteri(Mine.gl.TEXTURE_2D,
-        Mine.gl.TEXTURE_MAG_FILTER,
+        Mine.gl.TEXTURE_MIN_FILTER,
         Mine.gl.NEAREST);
       Mine.perror();
     Mine.gl.bindTexture(Mine.gl.TEXTURE_2D,null);
@@ -591,7 +603,7 @@ Mine.Texture = function(texture_name,callback){
 Mine.Texture.TEXTURE_LOCATION = Mine.RESOURCE_LOCATION+"/textures/"
 Mine.Texture.Cache = {};
 Mine.debug = true;
-//Mine.debug = false;
+Mine.debug = false;
 Mine.perror = function(force){
   if(!Mine.debug && !force){
     return;
@@ -623,7 +635,7 @@ Mine.dm = function(message){
 $(document).ready(function(){
   //Create the WebGL stage.
   var stage = Mine.GL_stage("minedotjs");
-  var shader = Mine.ShaderProgram("colored");
+  var shader = Mine.ShaderProgram("textured");
   var shape = Mine.BasicShapes.Cube();
   Mine.dm("Creating a texture");
   var texture = Mine.Texture("kitten",function(test){
@@ -633,7 +645,6 @@ $(document).ready(function(){
   shape.shape.setColor(Mine.Colors.indigo);
   shape.addRot([0.0, 0.0, 0.5]);
   shape.act = function(){
-    console.log("Moo");
     shape.setPos([0, 0, -10]);
     shape.addRot([0.0, 0.05, 0.05]);
   };
@@ -649,5 +660,5 @@ $(document).ready(function(){
   setTimeout(function(){
     stage.end();
     Mine.dm("Stoping the stage.");
-  },5000);
+  },500000);
 });

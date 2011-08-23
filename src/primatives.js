@@ -108,6 +108,18 @@ Mine.Primatives.Square = function(){
   Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER,square.vBuffer);
   Mine.gl.bufferData(Mine.gl.ARRAY_BUFFER, new Float32Array(square.vertices), Mine.gl.STATIC_DRAW);
 
+  //TexCoords.
+  square.texCoords = [
+     1.0,  1.0,  0.0,
+    -1.0,  1.0,  0.0,
+     1.0, -1.0,  0.0,
+    -1.0, -1.0,  0.0
+    ];
+  Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, square.tcBuffer);
+  Mine.perror();
+  Mine.gl.bufferData(Mine.gl.ARRAY_BUFFER, new Float32Array(square.texCoords), Mine.gl.STATIC_DRAW);
+  Mine.perror();
+
   //Color the square
   square.cCount= square.vCount;
   square.setColor([1.0,1.0,1.0,1.0]);
@@ -129,37 +141,44 @@ Mine.Primatives.Cube = function(){
 
   //The vertices are coming!
   cube.vertices = [
-    //Front..
-    -1.0, -1.0,  1.0,
-     1.0, -1.0,  1.0,
-     1.0,  1.0,  1.0,
-    -1.0,  1.0,  1.0,
-    //Back
-    -1.0, -1.0, -1.0,
-    -1.0,  1.0, -1.0,
-     1.0,  1.0, -1.0,
-     1.0, -1.0, -1.0,
-    //Top
-    -1.0,  1.0, -1.0,
-    -1.0,  1.0,  1.0,
-     1.0,  1.0,  1.0,
-     1.0,  1.0, -1.0,
-    //Bottom
-    -1.0, -1.0, -1.0,
-     1.0, -1.0, -1.0,
-     1.0, -1.0,  1.0,
-    -1.0, -1.0,  1.0,
-    //Right
-     1.0, -1.0, -1.0,
-     1.0,  1.0, -1.0,
-     1.0,  1.0,  1.0,
-     1.0, -1.0,  1.0,
-    //Left
-    -1.0, -1.0, -1.0,
-    -1.0, -1.0,  1.0,
-    -1.0,  1.0,  1.0,
-    -1.0,  1.0, -1.0
+            // Front face
+            -1.0, -1.0,  1.0,
+             1.0, -1.0,  1.0,
+             1.0,  1.0,  1.0,
+            -1.0,  1.0,  1.0,
+
+            // Back face
+            -1.0, -1.0, -1.0,
+            -1.0,  1.0, -1.0,
+             1.0,  1.0, -1.0,
+             1.0, -1.0, -1.0,
+
+            // Top face
+            -1.0,  1.0, -1.0,
+            -1.0,  1.0,  1.0,
+             1.0,  1.0,  1.0,
+             1.0,  1.0, -1.0,
+
+            // Bottom face
+            -1.0, -1.0, -1.0,
+             1.0, -1.0, -1.0,
+             1.0, -1.0,  1.0,
+            -1.0, -1.0,  1.0,
+
+            // Right face
+             1.0, -1.0, -1.0,
+             1.0,  1.0, -1.0,
+             1.0,  1.0,  1.0,
+             1.0, -1.0,  1.0,
+
+            // Left face
+            -1.0, -1.0, -1.0,
+            -1.0, -1.0,  1.0,
+            -1.0,  1.0,  1.0,
+            -1.0,  1.0, -1.0,
+
   ];
+
   cube.vCount = 24;
 
   //Filling the vertex buffer.
@@ -170,12 +189,13 @@ Mine.Primatives.Cube = function(){
 
   //Fill the index buffer.
   cube.indexes = [
-    0, 1, 2,      0, 2, 3,    //Front
-    4, 5, 6,      4, 6, 7,    //Back
-    8, 9, 10,     8, 10, 11,  //Top
-    12, 13, 14,   12, 14, 15, //Bottom
-    16, 17, 18,   16, 18, 19, //Right
-    20, 21, 22,   20, 22, 23  //Left
+            0, 1, 2,      0, 2, 3,    // Front face
+            4, 5, 6,      4, 6, 7,    // Back face
+            8, 9, 10,     8, 10, 11,  // Top face
+            12, 13, 14,   12, 14, 15, // Bottom face
+            16, 17, 18,   16, 18, 19, // Right face
+            20, 21, 22,   20, 22, 23  // Left face
+
   ];
   cube.iCount = 36;
 
@@ -186,41 +206,42 @@ Mine.Primatives.Cube = function(){
 
   //Fill the texture coordinates...
   cube.texCoords = [
-    //Front
-    0.0, 0.0,
-    1.0, 0.0,
-    1.0, 1.0,
-    0.0, 1.0,
+          // Front face
+          0.0, 0.0,
+          1.0, 0.0,
+          1.0, 1.0,
+          0.0, 1.0,
 
-    //Back
-    1.0, 0.0,
-    1.0, 1.0,
-    0.0, 1.0,
-    0.0, 0.0,
+          // Back face
+          1.0, 0.0,
+          1.0, 1.0,
+          0.0, 1.0,
+          0.0, 0.0,
 
-    //Top
-    0.0, 1.0,
-    0.0, 0.0,
-    1.0, 0.0,
-    1.0, 1.0,
+          // Top face
+          0.0, 1.0,
+          0.0, 0.0,
+          1.0, 0.0,
+          1.0, 1.0,
 
-    //Bottom
-    1.0, 1.0,
-    0.0, 1.0,
-    0.0, 0.0,
-    1.0, 0.0,
+          // Bottom face
+          1.0, 1.0,
+          0.0, 1.0,
+          0.0, 0.0,
+          1.0, 0.0,
 
-    //Right
-    1.0, 0.0,
-    1.0, 1.0,
-    0.0, 1.0,
-    0.0, 0.0,
+          // Right face
+          1.0, 0.0,
+          1.0, 1.0,
+          0.0, 1.0,
+          0.0, 0.0,
 
-    //Left
-    0.0, 0.0,
-    1.0, 0.0,
-    1.0, 1.0,
-    0.0, 1.0
+          // Left face
+          0.0, 0.0,
+          1.0, 0.0,
+          1.0, 1.0,
+          0.0, 1.0,
+
   ];
 
   Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, cube.tcBuffer);

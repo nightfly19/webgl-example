@@ -48,25 +48,25 @@ Mine.GL_stage = function(id){
     Mine.perror();
 
     //Vertex color.
-    gl_stage.program.vertexColorAttribute = gl_stage.gl.getAttribLocation(gl_stage.program, "aVertexColor");
-    Mine.perror();
-    gl_stage.gl.enableVertexAttribArray(gl_stage.program.vertexColorAttribute);
-    Mine.perror();
+    //gl_stage.program.vertexColorAttribute = gl_stage.gl.getAttribLocation(gl_stage.program, "aVertexColor");
+    //Mine.perror();
+    //gl_stage.gl.enableVertexAttribArray(gl_stage.program.vertexColorAttribute);
+    //Mine.perror();
 
     //Vertex texture coord
-    //Mine.dm("So I can get aTextureCoord?");
-    //gl_stage.program.textureCoordAttribute = gl_stage.gl.getAttribLocation(gl_stage.program, "aTextureCoord");
-    //Mine.perror();
-    //gl_stage.gl.enableVertexAttribArray(gl_stage.program.textureCoordAttribute);
-    //Mine.perror();
+    Mine.dm("So I can get aTextureCoord?");
+    gl_stage.program.textureCoordAttribute = gl_stage.gl.getAttribLocation(gl_stage.program, "aTextureCoord");
+    Mine.perror();
+    gl_stage.gl.enableVertexAttribArray(gl_stage.program.textureCoordAttribute);
+    Mine.perror();
 
 
     gl_stage.program.pMatrixUniform = gl_stage.gl.getUniformLocation(gl_stage.program,"uPMatrix");
     Mine.perror();
     gl_stage.program.mvMatrixUniform = gl_stage.gl.getUniformLocation(gl_stage.program,"uMVMatrix");
     Mine.perror();
-    //gl_stage.program.samplerUniform = gl_stage.gl.getUniformLocation(gl_stage.program,"uSampler");
-    //Mine.perror();
+    gl_stage.program.samplerUniform = gl_stage.gl.getUniformLocation(gl_stage.program,"uSampler");
+    Mine.perror();
  
     Mine.dm("Setting shader done");
   };
@@ -121,10 +121,10 @@ Mine.GL_stage = function(id){
       Mine.gl.vertexAttribPointer(gl_stage.program.vertexPositionAttribute, target.shape.vSize, Mine.gl.FLOAT, false, 0, 0);
 
       //Colors.
-      Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, target.shape.cBuffer);
-      Mine.perror();
-      Mine.gl.vertexAttribPointer(gl_stage.program.vertexColorAttribute, target.shape.cSize, Mine.gl.FLOAT, false, 0, 0);
-      Mine.perror();
+      //Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, target.shape.cBuffer);
+      //Mine.perror();
+      //Mine.gl.vertexAttribPointer(gl_stage.program.vertexColorAttribute, target.shape.cSize, Mine.gl.FLOAT, false, 0, 0);
+      //Mine.perror();
       
       //Texture stuff :)
       //console.log("Using texture: "+target.texture);
@@ -133,14 +133,15 @@ Mine.GL_stage = function(id){
       //console.log( target.shape.tcSize);
       Mine.gl.bindBuffer(Mine.gl.ARRAY_BUFFER, target.shape.tcBuffer);
       Mine.perror();
-      //Mine.gl.vertexAttribPointer(gl_stage.program.textureCoordAttribute, target.shape.tcSize, Mine.gl.FLOAT, false, 0, 0);
+      Mine.gl.vertexAttribPointer(gl_stage.program.textureCoordAttribute, target.shape.tcSize, Mine.gl.FLOAT, false, 0, 0);
       Mine.perror();
 
-      //Mine.gl.activeTexture(Mine.gl.TEXTURE0);
+      Mine.gl.activeTexture(Mine.gl.TEXTURE0);
       Mine.perror();
-      //Mine.gl.bindTexture(Mine.gl.TEXTURE_2D, target.texture.glTexture);
+      //console.log("What the fuck is this: "+target.texture.glTexture);
+      Mine.gl.bindTexture(Mine.gl.TEXTURE_2D, target.texture.glTexture);
       Mine.perror();
-      //Mine.gl.uniform1i(gl_stage.program.samplerUniform, 0);
+      Mine.gl.uniform1i(gl_stage.program.samplerUniform, 0);
       Mine.perror();
 
   

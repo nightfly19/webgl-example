@@ -11,7 +11,7 @@ Mine.RESOURCE_LOCATION = "resources";
 #include "texture.js"
 
 Mine.debug = true;
-//Mine.debug = false;
+Mine.debug = false;
 
 Mine.perror = function(force){
   if(!Mine.debug && !force){
@@ -52,7 +52,7 @@ Mine.dm = function(message){
 $(document).ready(function(){
   //Create the WebGL stage.
   var stage = Mine.GL_stage("minedotjs");
-  var shader = Mine.ShaderProgram("colored");
+  var shader = Mine.ShaderProgram("textured");
   var shape = Mine.BasicShapes.Cube();
   Mine.dm("Creating a texture");
   var texture = Mine.Texture("kitten",function(test){
@@ -64,7 +64,6 @@ $(document).ready(function(){
 
   shape.addRot([0.0, 0.0, 0.5]);
   shape.act = function(){
-    console.log("Moo");
     shape.setPos([0, 0, -10]);
     shape.addRot([0.0, 0.05, 0.05]);
   };
@@ -85,6 +84,6 @@ $(document).ready(function(){
   setTimeout(function(){
     stage.end();
     Mine.dm("Stoping the stage.");
-  },5000);
+  },500000);
 
 });

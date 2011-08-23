@@ -27,7 +27,7 @@ Mine.Texture = function(texture_name,callback){
         Mine.gl.NEAREST);
       Mine.perror();
     Mine.gl.texParameteri(Mine.gl.TEXTURE_2D, 
-        Mine.gl.TEXTURE_MAG_FILTER, 
+        Mine.gl.TEXTURE_MIN_FILTER, 
         Mine.gl.NEAREST);
       Mine.perror();
     Mine.gl.bindTexture(Mine.gl.TEXTURE_2D,null);
