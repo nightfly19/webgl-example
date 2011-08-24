@@ -11,24 +11,24 @@ Mine.RESOURCE_LOCATION = "resources";
 //Base class with utility functions to determine if an object is of certain types.
 Mine.Base = function () {
 
-    var base = {};
+    var self = {};
 
 
 
     //Holds what classes the object is.
-    base.classes = [];
+    self.classes = [];
 
 
 
     //Adds a class to the list of classes the object is.
-    base.addClass = function (new_class) {
+    self.addClass = function (new_class) {
         this.classes.push(new_class);
     };
 
 
 
     //Returns if an object is a member of the given class.
-    base.isA = function (class_name) {
+    self.isA = function (class_name) {
         var a_class;
         for(a_class in this.classes) {
             if(this.classes.hasOwnProperty(a_class)){
@@ -48,8 +48,8 @@ Mine.Base = function () {
 
 
 
-    base.addClass(Mine.Base);
-    return base;
+    self.addClass(Mine.Base);
+    return self;
 };
 
 
@@ -87,23 +87,23 @@ Mine.Colors = {
 
 //ShaderProgram class begin here. 
 Mine.ShaderProgram = function (shader_name) {
-    var shader = Mine.Base();
-    shader.addClass(Mine.ShaderProgram);
+    var self = Mine.Base();
+    self.addClass(Mine.ShaderProgram);
     var shader_location = Mine.RESOURCE_LOCATION+"/shaders/";
-    shader.loaded = false;
-    shader.failed = false;
-    shader.program = null;
+    self.loaded = false;
+    self.failed = false;
+    self.program = null;
 
     //Get and compile fragment shader.
     $.get(shader_location+shader_name+".fragment.shader", {},
             function (data) {
-                var fragment_shader = shader.compile(data, "fragment");
+                var fragment_shader = self.compile(data, "fragment");
                 if (fragment_shader) {
                     Mine.dm("Fragment shader compiled");
                     //Get and compile vertex shader.
                     $.get(shader_location+shader_name+".vertex.shader", {},
                         function (data) {
-                            var vertex_shader = shader.compile(data, "vertex");
+                            var vertex_shader = self.compile(data, "vertex");
                             if (vertex_shader) {
                                 Mine.dm("Fragment shader compiled");
                                 //Build the fragment shader program.
@@ -115,27 +115,27 @@ Mine.ShaderProgram = function (shader_name) {
                                 gl.linkProgram(shader_program);
                                 if (!gl.getProgramParameter(shader_program, gl.LINK_STATUS)) {
                                     Mine.dm("Failed to link program");
-                                    shader.failed = true;
+                                    self.failed = true;
                                 }
                                 else {
                                     Mine.dm("program linked!!!");
-                                    shader.program = shader_program;
-                                    shader.loaded = true;
+                                    self.program = shader_program;
+                                    self.loaded = true;
                                 }
                             }
                             else {
                                 Mine.dm("Failed to compile vertex shader...");
-                                shader.failed = true;
+                                self.failed = true;
                             }
                         }, "html");
                 }
                 else {
                     Mine.dm("Failed to compile fragment shader...");
-                    shader.failed = true;
+                    self.failed = true;
                 }
             }, "html");
-    shader.shader = null;
-    shader.compile = function (shader_source, type) {
+    self.shader = null;
+    self.compile = function (shader_source, type) {
         Mine.dm("Compiling shader");
         var gl = Mine.stage.gl;
         var new_shader;
@@ -166,14 +166,14 @@ Mine.ShaderProgram = function (shader_name) {
 
 
     //Assign a callback function to be called when the shader finishes compiling. If the shader is already compiled this function will be called immediately.
-    shader.waitFor = function (callback) {
+    self.waitFor = function (callback) {
         var timer;
         timer = setInterval(function () {
-            if (shader.failed) {
+            if (self.failed) {
                 clearInterval(timer);
                 Mine.dm("Shader failed to compile...");
             }
-            if (shader.loaded) {
+            if (self.loaded) {
                 clearInterval(timer);
                 callback();
             }
@@ -182,7 +182,7 @@ Mine.ShaderProgram = function (shader_name) {
 
 
 
-    return shader;
+    return self;
 };
 
 
@@ -200,49 +200,49 @@ Mine.Primatives = {};
 //Base primative class, creates the buffers that decendant primatives will utilize.
 Mine.Primatives.Primative = function () {
     Mine.dm("Creating a primative");
-    var primative = Mine.Base();
-    primative.addClass(Mine.Primatives.Primative);
-    primative.vertices = [];
-    primative.type = null;
-    primative.vertices = [];
-    primative.vBuffer = Mine.stage.gl.createBuffer();
+    var self = Mine.Base();
+    self.addClass(Mine.Primatives.Primative);
+    self.vertices = [];
+    self.type = null;
+    self.vertices = [];
+    self.vBuffer = Mine.stage.gl.createBuffer();
     Mine.Debug.printGLError();
-    primative.vCount = 0;
-    primative.vSize = 3;
-    primative.iBuffer = Mine.stage.gl.createBuffer();
+    self.vCount = 0;
+    self.vSize = 3;
+    self.iBuffer = Mine.stage.gl.createBuffer();
     Mine.Debug.printGLError();
-    primative.iCount= 0;
-    primative.iSize = 1;
-    primative.colors = false;
-    primative.cBuffer = Mine.stage.gl.createBuffer();
+    self.iCount= 0;
+    self.iSize = 1;
+    self.colors = false;
+    self.cBuffer = Mine.stage.gl.createBuffer();
     Mine.Debug.printGLError();
-    primative.cCount = 0;
-    primative.cSize = 4;
-    primative.tcBuffer = Mine.stage.gl.createBuffer();
+    self.cCount = 0;
+    self.cSize = 4;
+    self.tcBuffer = Mine.stage.gl.createBuffer();
     Mine.Debug.printGLError();
-    primative.tcCount = 0;
-    primative.tcSize = 2;
-    primative.texCoords = [];
+    self.tcCount = 0;
+    self.tcSize = 2;
+    self.texCoords = [];
 
 
 
     //Fills a primatives color buffer with the color in the vector given.
-    primative.setColor = function (new_color) {
+    self.setColor = function (new_color) {
         var i;
-        if (!primative.colors) {
-            primative.colors = new Array(primative.cCount * primative.cSize);
+        if (!self.colors) {
+            self.colors = new Array(self.cCount * self.cSize);
         }
-        for(i = 0; i < primative.cCount * primative.cSize; i++) {
-            primative.colors[i] = new_color[i%primative.cSize];
+        for(i = 0; i < self.cCount * self.cSize; i++) {
+            self.colors[i] = new_color[i%self.cSize];
         }
-        Mine.stage.gl.bindBuffer(Mine.stage.gl.ARRAY_BUFFER, primative.cBuffer);
+        Mine.stage.gl.bindBuffer(Mine.stage.gl.ARRAY_BUFFER, self.cBuffer);
         Mine.Debug.printGLError();
-        Mine.stage.gl.bufferData(Mine.stage.gl.ARRAY_BUFFER, new Float32Array(primative.colors), Mine.stage.gl.STATIC_DRAW);
+        Mine.stage.gl.bufferData(Mine.stage.gl.ARRAY_BUFFER, new Float32Array(self.colors), Mine.stage.gl.STATIC_DRAW);
         Mine.Debug.printGLError();
     };
 
     Mine.dm("Created a primative");
-    return primative;
+    return self;
 };
 
 
@@ -251,22 +251,22 @@ Mine.Primatives.Primative = function () {
 
 //Triangle primative.
 Mine.Primatives.Triangle = function () {
-    var triangle = Mine.Primatives.Primative();
-    triangle.addClass(Mine.Primatives.Triangle);
+    var self = Mine.Primatives.Primative();
+    self.addClass(Mine.Primatives.Triangle);
     //Filling the vBuffer.
-    triangle.vertices = [
+    self.vertices = [
         0.0, 1.0, 0.0,
         -1.0, -1.0, 0.0,
         1.0, -1.0, 0.0
             ];
-    triangle.vCount = 3;
-    Mine.stage.gl.bindBuffer(Mine.stage.gl.ARRAY_BUFFER, triangle.vBuffer);
-    Mine.stage.gl.bufferData(Mine.stage.gl.ARRAY_BUFFER, new Float32Array(triangle.vertices), Mine.stage.gl.STATIC_DRAW);
+    self.vCount = 3;
+    Mine.stage.gl.bindBuffer(Mine.stage.gl.ARRAY_BUFFER, self.vBuffer);
+    Mine.stage.gl.bufferData(Mine.stage.gl.ARRAY_BUFFER, new Float32Array(self.vertices), Mine.stage.gl.STATIC_DRAW);
     //Color the triangle.
-    triangle.cCount = triangle.vCount;
-    triangle.setColor([1.0, 1.0, 1.0, 1.0]);
-    triangle.type = "TRIANGLE_STRIP";
-    return triangle;
+    self.cCount = self.vCount;
+    self.setColor([1.0, 1.0, 1.0, 1.0]);
+    self.type = "TRIANGLE_STRIP";
+    return self;
 };
 
 
@@ -275,34 +275,34 @@ Mine.Primatives.Triangle = function () {
 
 //Square primative.
 Mine.Primatives.Square = function () {
-    var square = Mine.Primatives.Primative();
-    square.addClass(Mine.Primatives.Square);
-    square.vertices = [
+    var self = Mine.Primatives.Primative();
+    self.addClass(Mine.Primatives.Square);
+    self.vertices = [
         1.0, 1.0, 0.0,
         -1.0, 1.0, 0.0,
         1.0, -1.0, 0.0,
         -1.0, -1.0, 0.0
             ];
-    square.vCount = 4;
+    self.vCount = 4;
     //Creating and filling the buffer.
-    Mine.stage.gl.bindBuffer(Mine.stage.gl.ARRAY_BUFFER, square.vBuffer);
-    Mine.stage.gl.bufferData(Mine.stage.gl.ARRAY_BUFFER, new Float32Array(square.vertices), Mine.stage.gl.STATIC_DRAW);
+    Mine.stage.gl.bindBuffer(Mine.stage.gl.ARRAY_BUFFER, self.vBuffer);
+    Mine.stage.gl.bufferData(Mine.stage.gl.ARRAY_BUFFER, new Float32Array(self.vertices), Mine.stage.gl.STATIC_DRAW);
     //TexCoords.
-    square.texCoords = [
+    self.texCoords = [
         1.0, 1.0, 0.0,
         1.0, 1.0, 0.0,
         0.0, 0.0, 0.0,
         0.0, 0.0, 0.0
             ];
-    Mine.stage.gl.bindBuffer(Mine.stage.gl.ARRAY_BUFFER, square.tcBuffer);
+    Mine.stage.gl.bindBuffer(Mine.stage.gl.ARRAY_BUFFER, self.tcBuffer);
     Mine.Debug.printGLError();
-    Mine.stage.gl.bufferData(Mine.stage.gl.ARRAY_BUFFER, new Float32Array(square.texCoords), Mine.stage.gl.STATIC_DRAW);
+    Mine.stage.gl.bufferData(Mine.stage.gl.ARRAY_BUFFER, new Float32Array(self.texCoords), Mine.stage.gl.STATIC_DRAW);
     Mine.Debug.printGLError();
     //Color the square
-    square.cCount= square.vCount;
-    square.setColor([1.0, 1.0, 1.0, 1.0]);
-    square.type = "TRIANGLE_STRIP";
-    return square;
+    self.cCount= self.vCount;
+    self.setColor([1.0, 1.0, 1.0, 1.0]);
+    self.type = "TRIANGLE_STRIP";
+    return self;
 };
 
 
@@ -311,12 +311,12 @@ Mine.Primatives.Square = function () {
 
 //Cube primative.
 Mine.Primatives.Cube = function () {
-    var cube = Mine.Primatives.Primative();
-    cube.addClass(Mine.Primatives.Cube);
+    var self = Mine.Primatives.Primative();
+    self.addClass(Mine.Primatives.Cube);
     Mine.dm("Making a cube");
     Mine.Debug.printGLError();
     //The vertices are coming!
-    cube.vertices = [
+    self.vertices = [
         // Front face
         -1.0, -1.0, 1.0,
         1.0, -1.0, 1.0,
@@ -348,14 +348,14 @@ Mine.Primatives.Cube = function () {
         -1.0, 1.0, 1.0,
         -1.0, 1.0, -1.0,
         ];
-    cube.vCount = 24;
+    self.vCount = 24;
     //Filling the vertex buffer.
-    Mine.stage.gl.bindBuffer(Mine.stage.gl.ARRAY_BUFFER, cube.vBuffer);
+    Mine.stage.gl.bindBuffer(Mine.stage.gl.ARRAY_BUFFER, self.vBuffer);
     Mine.Debug.printGLError();
-    Mine.stage.gl.bufferData(Mine.stage.gl.ARRAY_BUFFER, new Float32Array(cube.vertices), Mine.stage.gl.STATIC_DRAW);
+    Mine.stage.gl.bufferData(Mine.stage.gl.ARRAY_BUFFER, new Float32Array(self.vertices), Mine.stage.gl.STATIC_DRAW);
     Mine.Debug.printGLError();
     //Fill the index buffer.
-    cube.indexes = [
+    self.indexes = [
         0, 1, 2, 0, 2, 3, // Front face
         4, 5, 6, 4, 6, 7, // Back face
         8, 9, 10, 8, 10, 11, // Top face
@@ -363,14 +363,14 @@ Mine.Primatives.Cube = function () {
         16, 17, 18, 16, 18, 19, // Right face
         20, 21, 22, 20, 22, 23 // Left face
             ];
-    cube.iCount = 36;
-    Mine.stage.gl.bindBuffer(Mine.stage.gl.ELEMENT_ARRAY_BUFFER, cube.iBuffer);
+    self.iCount = 36;
+    Mine.stage.gl.bindBuffer(Mine.stage.gl.ELEMENT_ARRAY_BUFFER, self.iBuffer);
     Mine.Debug.printGLError();
-    Mine.stage.gl.bufferData(Mine.stage.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(cube.indexes), Mine.stage.gl.STATIC_DRAW);
+    Mine.stage.gl.bufferData(Mine.stage.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(self.indexes), Mine.stage.gl.STATIC_DRAW);
     Mine.Debug.printGLError();
     //Texture coordinates when all faces are the same.
-    cube.texTypes = {};
-    cube.texTypes.allSame = [
+    self.texTypes = {};
+    self.texTypes.allSame = [
         // Front face
         0.0, 0.0,
         1.0, 0.0,
@@ -402,18 +402,18 @@ Mine.Primatives.Cube = function () {
         1.0, 1.0,
         0.0, 1.0,
         ];
-    cube.tcCount = 24;
-    //Color the cube
-    cube.cCount = cube.vCount;
-    cube.setColor(Mine.Colors.red);
-    cube.type = "ELEMENTS_TRIANGLES";
-    //cube.type = "TRIANGLE_STRIP";
+    self.tcCount = 24;
+    //Color the self
+    self.cCount = self.vCount;
+    self.setColor(Mine.Colors.red);
+    self.type = "ELEMENTS_TRIANGLES";
+    //self.type = "TRIANGLE_STRIP";
 
 
 
     //In the future this will allow you to choose which type of cube you have: one in which all the faces have the same texture, and other which different sides might have different textures. etc, etc..
-    cube.setTextureType = function (textureType) {
-        Mine.stage.gl.bindBuffer(Mine.stage.gl.ARRAY_BUFFER, cube.tcBuffer);
+    self.setTextureType = function (textureType) {
+        Mine.stage.gl.bindBuffer(Mine.stage.gl.ARRAY_BUFFER, self.tcBuffer);
         Mine.Debug.printGLError();
         Mine.stage.gl.bufferData(Mine.stage.gl.ARRAY_BUFFER, new Float32Array(textureType), Mine.stage.gl.STATIC_DRAW);
         Mine.Debug.printGLError();
@@ -421,9 +421,9 @@ Mine.Primatives.Cube = function () {
 
 
 
-    cube.setTextureType(cube.texTypes.allSame);
+    self.setTextureType(self.texTypes.allSame);
     Mine.dm("Made a cube");
-    return cube;
+    return self;
 };
 
 
@@ -433,40 +433,40 @@ Mine.Primatives.Cube = function () {
 //Thing is the base class for real objects that will interact and be movable in the "world".
 Mine.Things = {};
 Mine.Things.Thing = function () {
-    var thing = Mine.Base();
-    thing.addClass(Mine.Things.Thing);
-    thing.position = [0, 0, 0];
-    thing.rotation = [0, 0, 0];
-    thing.size = [0, 0, 0];
-    thing.textureLocation = [0, 0];
-    thing.needsDrawing= true;
-    thing.shape = null;
+    var self = Mine.Base();
+    self.addClass(Mine.Things.Thing);
+    self.position = [0, 0, 0];
+    self.rotation = [0, 0, 0];
+    self.size = [0, 0, 0];
+    self.textureLocation = [0, 0];
+    self.needsDrawing= true;
+    self.shape = null;
 
 
 
     //Sets the index of where in the current texture this objects texture lies.
-    thing.setTexIndex = function (new_index) {
-        thing.textureLocation = new_index;
+    self.setTexIndex = function (new_index) {
+        self.textureLocation = new_index;
     };
 
 
 
     //Reports if this object needs to be drawn if called with no arguments. If arguments are supplied sets needsDrawing to the boolean value of the given argument and returns the new value.
-    thing.drawMe = function (change) {
+    self.drawMe = function (change) {
         if (change != null) {
-            thing.needsDrawing = !!change;
+            self.needsDrawing = !!change;
         }
-        return thing.needsDrawing;
+        return self.needsDrawing;
     };
 
 
 
     //Moves the current position of the object by the vector given.
-    thing.movePos = function (movement) {
+    self.movePos = function (movement) {
         var i;
-        for(i in thing.position) {
-            if(thing.position.hasOwnProperty(i)){
-                thing.position[i] += movement[i];
+        for(i in self.position) {
+            if(self.position.hasOwnProperty(i)){
+                self.position[i] += movement[i];
             }
         }
     };
@@ -474,32 +474,32 @@ Mine.Things.Thing = function () {
 
 
     //Sets the current position of the object to the vector given.
-    thing.setPos = function (new_pos) {
-        thing.position = new_pos;
+    self.setPos = function (new_pos) {
+        self.position = new_pos;
     };
 
 
 
     //Returns the current position of the object.
-    thing.getPos = function () {
-        return thing.position;
+    self.getPos = function () {
+        return self.position;
     };
 
 
 
     //Sets the current rotation of the objecto to the vector given.
-    thing.setRot = function (new_rot) {
-        thing.rotation= new_rot;
+    self.setRot = function (new_rot) {
+        self.rotation= new_rot;
     };
 
 
 
     //Additionally rotates the object by the vector given.
-    thing.addRot = function (new_rot) {
+    self.addRot = function (new_rot) {
         var i;
-        for(i in thing.rotation) {
-            if(thing.rotation.hasOwnProperty(i)){
-                thing.rotation[i] += new_rot[i];
+        for(i in self.rotation) {
+            if(self.rotation.hasOwnProperty(i)){
+                self.rotation[i] += new_rot[i];
             }
         }
     };
@@ -507,26 +507,26 @@ Mine.Things.Thing = function () {
 
     
     //Returns the size of the object.
-    thing.getSize = function () {
-        return thing.size;
+    self.getSize = function () {
+        return self.size;
     };
 
 
 
     //Returns the rotation of the object.
-    thing.getRot = function () {
-        return thing.rotation;
+    self.getRot = function () {
+        return self.rotation;
     };
 
 
 
     //Performs whatever actions need to be performed on the current object.
-    thing.act = function () {
+    self.act = function () {
         //Mine.dm("I'm empty...");
     };
 
 
-    return thing;
+    return self;
 };
 
 
@@ -541,10 +541,10 @@ Mine.BasicShapes = {};
 
 //Basic square shaped thing.
 Mine.BasicShapes.Square = function () {
-    var square = Mine.Things.Thing();
-    square.addClass(Mine.BasicShapes.Square);
-    square.shape = Mine.Primatives.Square();
-    return square;
+    var self = Mine.Things.Thing();
+    self.addClass(Mine.BasicShapes.Square);
+    self.shape = Mine.Primatives.Square();
+    return self;
 };
 
 
@@ -553,14 +553,14 @@ Mine.BasicShapes.Square = function () {
 
 //Basic cube shaped thing.
 Mine.BasicShapes.Cube= function () {
-    var cube = Mine.Things.Thing();
-    cube.addClass(Mine.BasicShapes.Cube);
+    var self = Mine.Things.Thing();
+    self.addClass(Mine.BasicShapes.Cube);
     if (!Mine.BasicShapes.Cube.cache) {
         Mine.BasicShapes.Cube.cache = Mine.Primatives.Cube();
     }
-    cube.shape = Mine.BasicShapes.Cube.cache;
-    cube.size = Mine.BasicShapes.Cube.size;
-    return cube;
+    self.shape = Mine.BasicShapes.Cube.cache;
+    self.size = Mine.BasicShapes.Cube.size;
+    return self;
 };
 //End basic shapes.
 
@@ -576,7 +576,12 @@ Mine.BasicShapes.Cube.cache = null;
 
 
 
-//Mine.Player
+Mine.Things.Player = function () {
+    var self = Mine.Things.Thing();
+    self.addClass
+        
+    return self;
+};
 
 
 
@@ -589,9 +594,9 @@ Mine.Things.Blocks = {};
 
 //Base block class.
 Mine.Things.Blocks.Block = function () {
-    var block = new Mine.BasicShapes.Cube();
-    block.addClass(Mine.Things.Blocks.Block);
-    return block;
+    var self = new Mine.BasicShapes.Cube();
+    self.addClass(Mine.Things.Blocks.Block);
+    return self;
 };
 
 
@@ -600,10 +605,10 @@ Mine.Things.Blocks.Block = function () {
 
 //Invisible "air" block.
 Mine.Things.Blocks.Air = function () {
-    var air = new Mine.Things.Blocks.Block();
-    air.addClass(Mine.Things.Blocks.Air);
-    air.drawMe(false);
-    return air;
+    var self = new Mine.Things.Blocks.Block();
+    self.addClass(Mine.Things.Blocks.Air);
+    self.drawMe(false);
+    return self;
 };
 
 
@@ -611,10 +616,10 @@ Mine.Things.Blocks.Air = function () {
 
 //Grass block.
 Mine.Things.Blocks.Grass = function () {
-    var grass = new Mine.Things.Blocks.Block();
-    grass.addClass(Mine.Things.Blocks.Grass);
-    grass.setTexIndex([0, 15]);
-    return grass;
+    var self = new Mine.Things.Blocks.Block();
+    self.addClass(Mine.Things.Blocks.Grass);
+    self.setTexIndex([0, 15]);
+    return self;
 };
 
 
@@ -622,10 +627,10 @@ Mine.Things.Blocks.Grass = function () {
 
 //Brick block.
 Mine.Things.Blocks.Brick= function () {
-    var brick= new Mine.Things.Blocks.Block();
-    brick.addClass(Mine.Things.Blocks.Brick);
-    brick.setTexIndex([8, 13]);
-    return brick;
+    var self = new Mine.Things.Blocks.Block();
+    self.addClass(Mine.Things.Blocks.Brick);
+    self.setTexIndex([8, 13]);
+    return self;
 };
 
 
@@ -633,11 +638,11 @@ Mine.Things.Blocks.Brick= function () {
 
 //Goomba block.
 Mine.Things.Blocks. Goomba = function () {
-    var goomba= new Mine.Things.Blocks.Block();
-    goomba.addClass(Mine.Things.Blocks.Goomba);
-    goomba.shape = Mine.Primatives.Square();
-    goomba.setTexIndex([12, 14]);
-    return goomba;
+    var self= new Mine.Things.Blocks.Block();
+    self.addClass(Mine.Things.Blocks.Goomba);
+    self.shape = Mine.Primatives.Square();
+    self.setTexIndex([12, 14]);
+    return self;
 };
 
 
@@ -655,31 +660,31 @@ Mine.Things.Blocks.types = {
 
 //Stage class, also where the GL context is stored.
 Mine.GLStage = function (id) {
-    var glStage = Mine.Base();
+    var self = Mine.Base();
     var i;
-    glStage.addClass(Mine.Gl_stage);
+    self.addClass(Mine.Gl_stage);
 
     //Fields
-    glStage.canvas = null;
-    glStage.gl = null;
-    glStage.program = null;
-    glStage.actors = [];
-    glStage.mvMatrix = mat4.create();
-    glStage.pMatrix = mat4.create();
+    self.canvas = null;
+    self.gl = null;
+    self.program = null;
+    self.actors = [];
+    self.mvMatrix = mat4.create();
+    self.pMatrix = mat4.create();
     //The color used by WebGL's color clear function, functions as the background color of the world.
-    glStage.bgColor = Mine.Colors.fromInts([119, 187, 213, 255]);
-    //glStage.bgColor = Mine.Colors.black;
-    glStage.fps = 1000/30;
-    glStage.interval = null;
+    self.bgColor = Mine.Colors.fromInts([119, 187, 213, 255]);
+    //self.bgColor = Mine.Colors.black;
+    self.fps = 1000/30;
+    self.interval = null;
     //keyboard state info.
-    glStage.keys = Mine.Keys()    
+    self.keys = Mine.Keys()    
     //Get the canvas.
-    glStage.canvas = document.getElementById(id);
+    self.canvas = document.getElementById(id);
     //Try and initialize WebGL.
     try{
         Mine.dm("Initializing webgl");
-        glStage.gl = glStage.canvas.getContext("experimental-webgl");
-        Mine.stage = glStage;
+        self.gl = self.canvas.getContext("experimental-webgl");
+        Mine.stage = self;
         WebGLDebugUtils.init(Mine.stage.gl);
         Mine.Debug.printGLError();
     }
@@ -691,36 +696,36 @@ Mine.GLStage = function (id) {
 
 
     //Set the current shader program.
-    glStage.setProgram = function (active_program) {
+    self.setProgram = function (active_program) {
         Mine.dm("Setting shader");
-        glStage.program = active_program.program;
-        glStage.gl.useProgram(active_program.program);
+        self.program = active_program.program;
+        self.gl.useProgram(active_program.program);
         Mine.Debug.printGLError();
 
         //Vertex position.
-        glStage.program.vertexPositionAttribute = glStage.gl.getAttribLocation(glStage.program, "aVertexPosition");
+        self.program.vertexPositionAttribute = self.gl.getAttribLocation(self.program, "aVertexPosition");
         Mine.Debug.printGLError();
-        glStage.gl.enableVertexAttribArray(glStage.program.vertexPositionAttribute);
+        self.gl.enableVertexAttribArray(self.program.vertexPositionAttribute);
         Mine.Debug.printGLError();
 
         //Vertex color.
-        //glStage.program.vertexColorAttribute = glStage.gl.getAttribLocation(glStage.program, "aVertexColor");
+        //self.program.vertexColorAttribute = self.gl.getAttribLocation(self.program, "aVertexColor");
         //Mine.Debug.printGLError();
-        //glStage.gl.enableVertexAttribArray(glStage.program.vertexColorAttribute);
+        //self.gl.enableVertexAttribArray(self.program.vertexColorAttribute);
         //Mine.Debug.printGLError();
 
         //Vertex texture coord
         Mine.dm("So I can get aTextureCoord?");
-        glStage.program.textureCoordAttribute = glStage.gl.getAttribLocation(glStage.program, "aTextureCoord");
+        self.program.textureCoordAttribute = self.gl.getAttribLocation(self.program, "aTextureCoord");
         Mine.Debug.printGLError();
-        glStage.gl.enableVertexAttribArray(glStage.program.textureCoordAttribute);
+        self.gl.enableVertexAttribArray(self.program.textureCoordAttribute);
         Mine.Debug.printGLError();
-        glStage.program.pMatrixUniform = glStage.gl.getUniformLocation(glStage.program, "uPMatrix");
+        self.program.pMatrixUniform = self.gl.getUniformLocation(self.program, "uPMatrix");
         Mine.Debug.printGLError();
-        glStage.program.mvMatrixUniform = glStage.gl.getUniformLocation(glStage.program, "uMVMatrix");
+        self.program.mvMatrixUniform = self.gl.getUniformLocation(self.program, "uMVMatrix");
         Mine.Debug.printGLError();
-        glStage.program.samplerUniform = glStage.gl.getUniformLocation(glStage.program, "uSampler");
-        glStage.program.textureLocation = glStage.gl.getUniformLocation(glStage.program, "textureLocation");
+        self.program.samplerUniform = self.gl.getUniformLocation(self.program, "uSampler");
+        self.program.textureLocation = self.gl.getUniformLocation(self.program, "textureLocation");
         Mine.Debug.printGLError();
         Mine.dm("Setting shader done");
     };
@@ -728,11 +733,11 @@ Mine.GLStage = function (id) {
 
 
     //Set the uniforms.
-    glStage.setUniforms = function () {
+    self.setUniforms = function () {
         Mine.dm("Setting uniforms");
-        glStage.gl.uniformMatrix4fv(glStage.program.pMatrixUniform, false, glStage.pMatrix);
+        self.gl.uniformMatrix4fv(self.program.pMatrixUniform, false, self.pMatrix);
         Mine.Debug.printGLError();
-        glStage.gl.uniformMatrix4fv(glStage.program.mvMatrixUniform, false, glStage.mvMatrix);
+        self.gl.uniformMatrix4fv(self.program.mvMatrixUniform, false, self.mvMatrix);
         Mine.Debug.printGLError();
         Mine.dm("Uniforms set.");
     };
@@ -740,28 +745,28 @@ Mine.GLStage = function (id) {
 
 
     //Sets the current camera.
-    glStage.setCamera = function(newCamera){
-        glStage.camera = newCamera;
-        newCamera.stage = glStage;
+    self.setCamera = function(newCamera){
+        self.camera = newCamera;
+        newCamera.stage = self;
     };
 
 
 
     //Clear the stage.
-    glStage.clear = function () {
+    self.clear = function () {
         Mine.dm("Clear the stage");
-        glStage.gl.clearColor(glStage.bgColor[0],
-                glStage.bgColor[1],
-                glStage.bgColor[2],
-                glStage.bgColor[3]
+        self.gl.clearColor(self.bgColor[0],
+                self.bgColor[1],
+                self.bgColor[2],
+                self.bgColor[3]
                 );
-        glStage.gl.enable(glStage.gl.BLEND);
-        glStage.gl.enable(glStage.gl.DEPTH_TEST);
-        glStage.gl.blendFunc(glStage.gl.SRC_ALPHA, glStage.gl.ONE_MINUS_SRC_ALPHA);
+        self.gl.enable(self.gl.BLEND);
+        self.gl.enable(self.gl.DEPTH_TEST);
+        self.gl.blendFunc(self.gl.SRC_ALPHA, self.gl.ONE_MINUS_SRC_ALPHA);
         Mine.Debug.printGLError();
-        glStage.gl.depthFunc(glStage.gl.LEQUAL);
+        self.gl.depthFunc(self.gl.LEQUAL);
         Mine.Debug.printGLError();
-        glStage.gl.clear(glStage.gl.COLOR_BUFFER_BIT|glStage.gl.DEPTH_BUFFER_BIT);
+        self.gl.clear(self.gl.COLOR_BUFFER_BIT|self.gl.DEPTH_BUFFER_BIT);
         Mine.Debug.printGLError();
         Mine.dm("Cleared the stage");
     };
@@ -770,7 +775,7 @@ Mine.GLStage = function (id) {
 
     //Key input bits.
     //Hook keys
-    glStage.hookKeys = function(){
+    self.hookKeys = function(){
         var importantKeys = [13, 32, 65, 68, 83, 87];
         var i;
 
@@ -789,13 +794,13 @@ Mine.GLStage = function (id) {
 
         $(document).keydown(function(e){
             //console.log("Key has been pressed: "+e.keyCode);
-            glStage.keys[e.keyCode] = true;
+            self.keys[e.keyCode] = true;
             return checkImportant(e.keyCode);
         });
 
         $(document).keyup(function(e){
             //console.log("Key has been released: "+e.keyCode);
-            glStage.keys[e.keyCode] = false;
+            self.keys[e.keyCode] = false;
             return checkImportant(e.keyCode);
         });
 
@@ -803,58 +808,58 @@ Mine.GLStage = function (id) {
 
 
     //Draw the stage.
-    glStage.draw = function (target) {
+    self.draw = function (target) {
         Mine.dm("Drawing something");
         //Reset the move matrix.
-        mat4.identity(glStage.mvMatrix);
+        mat4.identity(self.mvMatrix);
         //Allow the camera to alter the mvMatrix;
-        glStage.camera.changePerspective();
+        self.camera.changePerspective();
         if (target && target.isA(Mine.Things.Thing)) {
             Mine.dm("Drawing a thing");
 
             //Move to where the shape should be drawn.
-            mat4.translate(glStage.mvMatrix, target.getPos());
+            mat4.translate(self.mvMatrix, target.getPos());
 
             //Apply the shapes rotation.
-            mat4.rotate(glStage.mvMatrix, target.getRot()[0], [1, 0, 0]);
-            mat4.rotate(glStage.mvMatrix, target.getRot()[1], [0, 1, 0]);
-            mat4.rotate(glStage.mvMatrix, target.getRot()[2], [0, 0, 1]);
+            mat4.rotate(self.mvMatrix, target.getRot()[0], [1, 0, 0]);
+            mat4.rotate(self.mvMatrix, target.getRot()[1], [0, 1, 0]);
+            mat4.rotate(self.mvMatrix, target.getRot()[2], [0, 0, 1]);
 
             //Bind the Vertex buffer
             Mine.stage.gl.bindBuffer(Mine.stage.gl.ARRAY_BUFFER, target.shape.vBuffer);
-            Mine.stage.gl.vertexAttribPointer(glStage.program.vertexPositionAttribute, target.shape.vSize, Mine.stage.gl.FLOAT, false, 0, 0);
+            Mine.stage.gl.vertexAttribPointer(self.program.vertexPositionAttribute, target.shape.vSize, Mine.stage.gl.FLOAT, false, 0, 0);
 
             //Bind the color buffer.
             //Mine.stage.gl.bindBuffer(Mine.stage.gl.ARRAY_BUFFER, target.shape.cBuffer);
             //Mine.Debug.printGLError();
-            //Mine.stage.gl.vertexAttribPointer(glStage.program.vertexColorAttribute, target.shape.cSize, Mine.stage.gl.FLOAT, false, 0, 0);
+            //Mine.stage.gl.vertexAttribPointer(self.program.vertexColorAttribute, target.shape.cSize, Mine.stage.gl.FLOAT, false, 0, 0);
             //Mine.Debug.printGLError();
 
             //Bind the texture coordinate buffer.
             Mine.dm("Using texture: "+target.texture);
             Mine.stage.gl.bindBuffer(Mine.stage.gl.ARRAY_BUFFER, target.shape.tcBuffer);
             Mine.Debug.printGLError();
-            Mine.stage.gl.vertexAttribPointer(glStage.program.textureCoordAttribute, target.shape.tcSize, Mine.stage.gl.FLOAT, false, 0, 0);
+            Mine.stage.gl.vertexAttribPointer(self.program.textureCoordAttribute, target.shape.tcSize, Mine.stage.gl.FLOAT, false, 0, 0);
             Mine.Debug.printGLError();
 
             //Set the current and active texture and bind the texture buffer.
             Mine.stage.gl.activeTexture(Mine.stage.gl.TEXTURE0);
             Mine.Debug.printGLError();
-            Mine.stage.gl.bindTexture(Mine.stage.gl.TEXTURE_2D, glStage.texture.glTexture);
+            Mine.stage.gl.bindTexture(Mine.stage.gl.TEXTURE_2D, self.texture.glTexture);
             Mine.Debug.printGLError();
-            Mine.stage.gl.uniform1i(glStage.program.samplerUniform, 0);
+            Mine.stage.gl.uniform1i(self.program.samplerUniform, 0);
             Mine.Debug.printGLError();
 
             //Sets the mvMatrix and pMatrix uniforms.
-            glStage.setUniforms();
+            self.setUniforms();
 
             //Create matrix that will hold the texture indexes. This is inefficent and needs to be done differently.
             var test = mat4.create();
-            test[0] = glStage.texture.devisions;
+            test[0] = self.texture.devisions;
             test[1] = target.textureLocation[0];
             test[2] = target.textureLocation[1];
-            Mine.dm("TextureLocation: "+glStage.program.textureLocation);
-            glStage.gl.uniformMatrix4fv(glStage.program.textureLocation, false, test);
+            Mine.dm("TextureLocation: "+self.program.textureLocation);
+            self.gl.uniformMatrix4fv(self.program.textureLocation, false, test);
             Mine.Debug.printGLError();
 
             //Draw the shape.
@@ -880,16 +885,16 @@ Mine.GLStage = function (id) {
 
 
     //Addes an object to the stages collection.
-    glStage.add = function (new_actor) {
-        glStage.actors.push(new_actor);
-        new_actor.stage = glStage;
+    self.add = function (new_actor) {
+        self.actors.push(new_actor);
+        new_actor.stage = self;
     };
 
 
 
     //Runs the simulation.
-    glStage.run = function () {
-        if (glStage.interval) {
+    self.run = function () {
+        if (self.interval) {
             return;
         }
         //Mine.stage.gl.clearColor(0.0, 1.0, 0.0, 1.0);
@@ -899,59 +904,59 @@ Mine.GLStage = function (id) {
         Mine.stage.gl.enable(Mine.stage.gl.DEPTH_TEST);
         Mine.Debug.printGLError();
 
-        mat4.perspective(45, glStage.gl.viewportWidth / glStage.gl.viewportHeight, 0.1, 100.0, glStage.pMatrix);
+        mat4.perspective(45, self.gl.viewportWidth / self.gl.viewportHeight, 0.1, 100.0, self.pMatrix);
         Mine.Debug.printGLError();
-        glStage.interval = setInterval(function () {
+        self.interval = setInterval(function () {
             var actor;
-            glStage.clear();
+            self.clear();
 
             //The camera is special so it acts here, outside normal loop.
-            glStage.camera.act();
+            self.camera.act();
 
             Mine.dm("Begining acting loop.");
-            for(actor in glStage.actors) {
-                if(glStage.actors.hasOwnProperty(actor)){
-                    glStage.actors[actor].act();
+            for(actor in self.actors) {
+                if(self.actors.hasOwnProperty(actor)){
+                    self.actors[actor].act();
                     //Mine.dm("\tMoo");
                 }
             }
 
             Mine.dm("Begining drawing loop.");
-            for(actor in glStage.actors) {
-                if(glStage.actors.hasOwnProperty(actor)){
-                    if (glStage.actors[actor].drawMe()) {
-                        glStage.draw(glStage.actors[actor]);
+            for(actor in self.actors) {
+                if(self.actors.hasOwnProperty(actor)){
+                    if (self.actors[actor].drawMe()) {
+                        self.draw(self.actors[actor]);
                     }
                 }
             }
-        }, glStage.fps);
+        }, self.fps);
     };
 
 
 
     //Stops the simulation if it is currently running after the current tick.
-    glStage.end = function () {
-        clearInterval(glStage.interval);
-        glStage.interval = null;
+    self.end = function () {
+        clearInterval(self.interval);
+        self.interval = null;
     };
 
 
 
     //Constructor stuff.
-    if (glStage.gl) {
-        //glStage.clear();
-        glStage.keys.hookKeys();
+    if (self.gl) {
+        //self.clear();
+        self.keys.hookKeys();
         //Sets the viewport to the current size of the canvas element.
-        glStage.gl.viewportWidth = glStage.canvas.width;
-        glStage.gl.viewportHeight = glStage.canvas.height;
+        self.gl.viewportWidth = self.canvas.width;
+        self.gl.viewportHeight = self.canvas.height;
     }
     else {
         Mine.dm("Failed somehow");
     }
 
-    Mine.stage = glStage;
-    glStage.setCamera(Mine.Things.Camera());
-    return glStage;
+    Mine.stage = self;
+    self.setCamera(Mine.Things.Camera());
+    return self;
 };
 
 
@@ -960,9 +965,9 @@ Mine.GLStage = function (id) {
 
 //Creates and caches texture objects from names.
 Mine.Texture = function (texture_name, devisions, callback) {
-    var texture = Mine.Base();
-    texture.addClass(Mine.Texture);
-    texture.devisions = devisions;
+    var self = Mine.Base();
+    self.addClass(Mine.Texture);
+    self.devisions = devisions;
     Mine.dm("Creating a texture");
     //Check the cache first!.
     if (Mine.Texture.Cache[texture_name]) {
@@ -970,20 +975,20 @@ Mine.Texture = function (texture_name, devisions, callback) {
         return Mine.Texture.Cache[texture_name];
     }
 
-    texture.glTexture = Mine.stage.gl.createTexture();
+    self.glTexture = Mine.stage.gl.createTexture();
     Mine.Debug.printGLError();
 
-    texture.image = new Image();
+    self.image = new Image();
 
     //This callback handles loading the texture into a WebGL buffer.
-    texture.image.onload = function () {
-        Mine.stage.gl.bindTexture(Mine.stage.gl.TEXTURE_2D, texture.glTexture);
+    self.image.onload = function () {
+        Mine.stage.gl.bindTexture(Mine.stage.gl.TEXTURE_2D, self.glTexture);
         Mine.Debug.printGLError();
         Mine.stage.gl.pixelStorei(Mine.stage.gl.UNPACK_FLIP_Y_WEBGL, true);
         Mine.Debug.printGLError();
         Mine.stage.gl.texImage2D(Mine.stage.gl.TEXTURE_2D, 0, Mine.stage.gl.RGBA, Mine.stage.gl.RGBA,
                 Mine.stage.gl.UNSIGNED_BYTE,
-                texture.image);
+                self.image);
         Mine.Debug.printGLError();
         Mine.stage.gl.texParameteri(Mine.stage.gl.TEXTURE_2D,
                 Mine.stage.gl.TEXTURE_MAG_FILTER,
@@ -997,15 +1002,15 @@ Mine.Texture = function (texture_name, devisions, callback) {
         Mine.Debug.printGLError();
         Mine.dm("Texture created.");
         if (callback) {
-            //Mine.dm(texture.glTexture);
-            callback(texture);
+            //Mine.dm(self.glTexture);
+            callback(self);
         }
     };
 
     //Sets the images source (triggers loading the texture).
-    texture.image.src = Mine.Texture.TEXTURE_LOCATION+texture_name+".png";
+    self.image.src = Mine.Texture.TEXTURE_LOCATION+texture_name+".png";
 
-    return texture;
+    return self;
 };
 
 Mine.Texture.TEXTURE_LOCATION = Mine.RESOURCE_LOCATION+"/textures/";
@@ -1017,30 +1022,30 @@ Mine.Texture.Cache = {};
 
 //Camera class
 Mine.Things.Camera = function(){
-    var camera = Mine.Things.Thing();
-    camera.addClass(Mine.Things.Camera);
-    camera.drawMe(false);
-    camera.stage = null;
+    var self = Mine.Things.Thing();
+    self.addClass(Mine.Things.Camera);
+    self.drawMe(false);
+    self.stage = null;
 
     //Change the mvMatrix to reflect the position of the camera.
-    camera.changePerspective = function(){
-        if(camera.stage === null){
+    self.changePerspective = function(){
+        if(self.stage === null){
             return;
         }
-        mat4.rotate(camera.stage.mvMatrix, -camera.rotation[0],[1,0,0]);
-        mat4.rotate(camera.stage.mvMatrix, -camera.rotation[1],[0,1,0]);
-        mat4.rotate(camera.stage.mvMatrix, -camera.rotation[2],[0,0,1]);
-        mat4.translate(camera.stage.mvMatrix, [
-                -camera.position[0],
-                -camera.position[1],
-                -camera.position[2]
+        mat4.rotate(self.stage.mvMatrix, -self.rotation[0],[1,0,0]);
+        mat4.rotate(self.stage.mvMatrix, -self.rotation[1],[0,1,0]);
+        mat4.rotate(self.stage.mvMatrix, -self.rotation[2],[0,0,1]);
+        mat4.translate(self.stage.mvMatrix, [
+                -self.position[0],
+                -self.position[1],
+                -self.position[2]
                 ]);
 
     };
 
 
 
-    return camera;
+    return self;
 };
 
 
@@ -1093,17 +1098,18 @@ Mine.dm = function (message) {
 
 //Handles keyboard input hooking.
 Mine.Keys = function () {
-    var keys = Mine.Base();
+    var self = Mine.Base();
+    self.addClass(Mine.Keys);
 
-    keys.state = {};
+    self.state = {};
 
-    keys.hookKeys = function () {
+    self.hookKeys = function () {
 
         //On key down events.
         $(document).keydown(function(e){
             var key = Mine.Keys.IMPORTANT_KEYS[e.keyCode];
             if(key){
-                keys.state[key] = true;
+                self.state[key] = true;
                 return false;
             }
 
@@ -1115,16 +1121,15 @@ Mine.Keys = function () {
             //console.log("Key has been released: "+e.keyCode);
             var key = Mine.Keys.IMPORTANT_KEYS[e.keyCode];
             if(key){
-                keys.state[key] = false;
+                self.state[key] = false;
                 return false;
             }
             return true;
         });
 
     };
-    keys.addClass(Mine.Keys);
 
-    return keys;
+    return self;
 };
 
 Mine.Keys.IMPORTANT_KEYS = {
