@@ -588,6 +588,7 @@ Mine.Things.Player = function () {
     //Where, offset from the player, the camera is positioned.
     self.cameraPosition = [0,1,0]
 
+    self.controlsCamera = true;
     //The players movements control how the camera moves.
     self.act = function () {
 
@@ -611,9 +612,11 @@ Mine.Things.Player = function () {
         if(right){
             self.movePos([speed, 0, 0]);
         }
-        self.stage.camera.setPos(self.position);
-        self.stage.camera.movePos(self.cameraPosition);
-        console.log(self.stage.camera.position);
+
+        if(self.controlsCamera){
+            self.stage.camera.setPos(self.position);
+            self.stage.camera.movePos(self.cameraPosition);
+        }
     };
 
     return self;
