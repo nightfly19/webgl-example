@@ -430,37 +430,14 @@ Mine.Primatives.Cube = function () {
 
 
 
-//Thing is the base class for real objects that will interact and be movable in the "world".
-Mine.Things = {};
-Mine.Things.Thing = function () {
+//Object with dimentions
+Mine.DimentionalObject = function () {
     var self = Mine.Base();
-    self.addClass(Mine.Things.Thing);
+    self.addClass(Mine.DimentionalObject);
+
     self.position = [0, 0, 0];
     self.rotation = [0, 0, 0];
     self.size = [0, 0, 0];
-    self.textureLocation = [0, 0];
-    self.needsDrawing= false;
-    self.shape = null;
-    self.collides = false;
-
-
-
-    //Sets the index of where in the current texture this objects texture lies.
-    self.setTexIndex = function (new_index) {
-        self.textureLocation = new_index;
-    };
-
-
-
-    //Reports if this object needs to be drawn if called with no arguments. If arguments are supplied sets needsDrawing to the boolean value of the given argument and returns the new value.
-    self.drawMe = function (change) {
-        if (change != null) {
-            self.needsDrawing = !!change;
-        }
-        return self.needsDrawing;
-    };
-
-
 
     //Moves the current position of the object by the vector given.
     self.movePos = function (movement) {
@@ -490,13 +467,6 @@ Mine.Things.Thing = function () {
 
 
 
-    //Sets the current rotation of the objecto to the vector given.
-    self.setRot = function (new_rot) {
-        self.rotation= new_rot;
-    };
-
-
-
     //Additionally rotates the object by the vector given.
     self.addRot = function (new_rot) {
         var i;
@@ -508,7 +478,21 @@ Mine.Things.Thing = function () {
     };
 
 
+
+    //Sets the current rotation of the objecto to the vector given.
+    self.setRot = function (new_rot) {
+        self.rotation= new_rot;
+    };
     
+
+
+    //Returns the rotation of the object.
+    self.getRot = function () {
+        return self.rotation;
+    };
+
+
+
     //Returns the size of the object.
     self.getSize = function () {
         return self.size;
@@ -516,9 +500,38 @@ Mine.Things.Thing = function () {
 
 
 
-    //Returns the rotation of the object.
-    self.getRot = function () {
-        return self.rotation;
+    return self;
+};
+
+
+
+
+
+//Thing is the base class for real objects that will interact and be movable in the "world".
+Mine.Things = {};
+Mine.Things.Thing = function () {
+    var self = Mine.DimentionalObject();
+    self.addClass(Mine.Things.Thing);
+    self.textureLocation = [0, 0];
+    self.needsDrawing= false;
+    self.shape = null;
+    self.collides = false;
+
+
+
+    //Sets the index of where in the current texture this objects texture lies.
+    self.setTexIndex = function (new_index) {
+        self.textureLocation = new_index;
+    };
+
+
+
+    //Reports if this object needs to be drawn if called with no arguments. If arguments are supplied sets needsDrawing to the boolean value of the given argument and returns the new value.
+    self.drawMe = function (change) {
+        if (change != null) {
+            self.needsDrawing = !!change;
+        }
+        return self.needsDrawing;
     };
 
 
@@ -579,10 +592,22 @@ Mine.BasicShapes.Cube.cache = null;
 
 
 
+Mine.Things.Entities = {};
 
-Mine.Things.Player = function () {
+Mine.Things.Entities.Entity = function () {
     var self = Mine.Things.Thing();
-    self.addClass(Mine.Things.Player);
+    self.addClass(Mine.Things.Entities.Entity);
+    return self;
+};
+
+
+
+
+
+//Player class.
+Mine.Things.Entities.Player = function () {
+    var self = Mine.Things.Entities.Entity();
+    self.addClass(Mine.Things.Entities.Player);
 
     //The player is currently invisible.
     self.drawMe(false);
@@ -702,9 +727,14 @@ Mine.Things.Blocks.types = {
 
 //Chunk class: stores a matrix of blocks that represent the world.
 Mine.Chunk = function(){
-    var self = Mine.base();
+    var self = Mine.DimentionalObject();
     self.addClass(Mine.Chunk);
-}
+    return self;
+};
+
+Mine.Chunk.G_WIDTH = 16;
+Mine.Chunk.G_LENGTH = 16;
+Mine.Chunk.G_HEIGHT = 5;
 
 
 
@@ -1224,7 +1254,7 @@ $(document).ready(function () {
         //shape.movePos([0.1, 0, 0]);
     };
 
-    var player = Mine.Things.Player();
+    var player = Mine.Things.Entities.Player();
     stage.add(player);
     stage.add(thing);
 
