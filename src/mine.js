@@ -475,7 +475,9 @@ Mine.Things.Thing = function () {
 
     //Sets the current position of the object to the vector given.
     self.setPos = function (new_pos) {
-        self.position = new_pos;
+        self.position[0] = new_pos[0];
+        self.position[1] = new_pos[1];
+        self.position[2] = new_pos[2];
     };
 
 
@@ -578,8 +580,42 @@ Mine.BasicShapes.Cube.cache = null;
 
 Mine.Things.Player = function () {
     var self = Mine.Things.Thing();
-    self.addClass
-        
+    self.addClass(Mine.Things.Player);
+
+    //The player is currently invisible.
+    self.drawMe(false);
+
+    //Where, offset from the player, the camera is positioned.
+    self.cameraPosition = [0,1,0]
+
+    //The players movements control how the camera moves.
+    self.act = function () {
+
+
+        var up, down, left, right;
+        up = (self.stage.keys.state.W && !self.stage.keys.state.S) ? true : false;
+        down = (!self.stage.keys.state.W && self.stage.keys.state.S) ? true : false;
+        left = (self.stage.keys.state.A && !self.stage.keys.state.D) ? true : false;
+        right = (!self.stage.keys.state.A && self.stage.keys.state.D) ? true : false;
+
+        var speed = 0.1;
+        if(up){
+            self.movePos([0, 0, -speed]);
+        }
+        if(left){
+            self.movePos([-speed, 0, 0]);
+        }
+        if(down){
+            self.movePos([0, 0, speed]);
+        }
+        if(right){
+            self.movePos([speed, 0, 0]);
+        }
+        self.stage.camera.setPos(self.position);
+        self.stage.camera.movePos(self.cameraPosition);
+        console.log(self.stage.camera.position);
+    };
+
     return self;
 };
 
@@ -678,8 +714,8 @@ Mine.GLStage = function (id) {
     self.interval = null;
     //keyboard state info.
     self.keys = Mine.Keys()    
-    //Get the canvas.
-    self.canvas = document.getElementById(id);
+        //Get the canvas.
+        self.canvas = document.getElementById(id);
     //Try and initialize WebGL.
     try{
         Mine.dm("Initializing webgl");
@@ -814,6 +850,7 @@ Mine.GLStage = function (id) {
         mat4.identity(self.mvMatrix);
         //Allow the camera to alter the mvMatrix;
         self.camera.changePerspective();
+
         if (target && target.isA(Mine.Things.Thing)) {
             Mine.dm("Drawing a thing");
 
@@ -1170,31 +1207,9 @@ $(document).ready(function () {
     thing.act = function () {
         //shape.movePos([0.1, 0, 0]);
     };
-    stage.camera.addRot([0,0.0,0.1]);
 
-    stage.camera.act = function () {
-        var up, down, left, right;
-        up = (stage.keys.state.W && !stage.keys.state.S) ? true : false;
-        down = (!stage.keys.state.W && stage.keys.state.S) ? true : false;
-        left = (stage.keys.state.A && !stage.keys.state.D) ? true : false;
-        right = (!stage.keys.state.A && stage.keys.state.D) ? true : false;
-
-        var speed = 0.1;
-        if(up){
-            stage.camera.movePos([0, 0, -speed]);
-        };
-        if(left){
-            stage.camera.movePos([-speed, 0, 0]);
-        };
-        if(down){
-            stage.camera.movePos([0, 0, speed]);
-        };
-        if(right){
-            stage.camera.movePos([speed, 0, 0]);
-        };
-        //stage.camera.movePos([0.1, 0, 0]);
-    }
-
+    var player = Mine.Things.Player();
+    stage.add(player);
     stage.add(thing);
 
     //Wait for the shader, then run the simulation.
