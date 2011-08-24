@@ -431,9 +431,10 @@ Mine.Primatives.Cube = function () {
 
 
 //Thing is the base class for real objects that will interact and be movable in the "world".
-Mine.Thing = function () {
+Mine.Things = {};
+Mine.Things.Thing = function () {
     var thing = Mine.Base();
-    thing.addClass(Mine.Thing);
+    thing.addClass(Mine.Things.Thing);
     thing.position = [0, 0, 0];
     thing.rotation = [0, 0, 0];
     thing.size = [0, 0, 0];
@@ -540,7 +541,7 @@ Mine.BasicShapes = {};
 
 //Basic square shaped thing.
 Mine.BasicShapes.Square = function () {
-    var square = Mine.Thing();
+    var square = Mine.Things.Thing();
     square.addClass(Mine.BasicShapes.Square);
     square.shape = Mine.Primatives.Square();
     return square;
@@ -552,7 +553,7 @@ Mine.BasicShapes.Square = function () {
 
 //Basic cube shaped thing.
 Mine.BasicShapes.Cube= function () {
-    var cube = Mine.Thing();
+    var cube = Mine.Things.Thing();
     cube.addClass(Mine.BasicShapes.Cube);
     if (!Mine.BasicShapes.Cube.cache) {
         Mine.BasicShapes.Cube.cache = Mine.Primatives.Cube();
@@ -582,14 +583,14 @@ Mine.BasicShapes.Cube.cache = null;
 
 
 //Block type things (they are cube shaped.)
-Mine.Blocks = {};
+Mine.Things.Blocks = {};
 
 
 
 //Base block class.
-Mine.Blocks.Block = function () {
+Mine.Things.Blocks.Block = function () {
     var block = new Mine.BasicShapes.Cube();
-    block.addClass(Mine.Blocks.Block);
+    block.addClass(Mine.Things.Blocks.Block);
     return block;
 };
 
@@ -598,9 +599,9 @@ Mine.Blocks.Block = function () {
 
 
 //Invisible "air" block.
-Mine.Blocks.Air = function () {
-    var air = new Mine.Blocks.Block();
-    air.addClass(Mine.Blocks.Air);
+Mine.Things.Blocks.Air = function () {
+    var air = new Mine.Things.Blocks.Block();
+    air.addClass(Mine.Things.Blocks.Air);
     air.drawMe(false);
     return air;
 };
@@ -609,9 +610,9 @@ Mine.Blocks.Air = function () {
 
 
 //Grass block.
-Mine.Blocks.Grass = function () {
-    var grass = new Mine.Blocks.Block();
-    grass.addClass(Mine.Blocks.Grass);
+Mine.Things.Blocks.Grass = function () {
+    var grass = new Mine.Things.Blocks.Block();
+    grass.addClass(Mine.Things.Blocks.Grass);
     grass.setTexIndex([0, 15]);
     return grass;
 };
@@ -620,9 +621,9 @@ Mine.Blocks.Grass = function () {
 
 
 //Brick block.
-Mine.Blocks.Brick= function () {
-    var brick= new Mine.Blocks.Block();
-    brick.addClass(Mine.Blocks.Brick);
+Mine.Things.Blocks.Brick= function () {
+    var brick= new Mine.Things.Blocks.Block();
+    brick.addClass(Mine.Things.Blocks.Brick);
     brick.setTexIndex([8, 13]);
     return brick;
 };
@@ -631,9 +632,9 @@ Mine.Blocks.Brick= function () {
 
 
 //Goomba block.
-Mine.Blocks. Goomba = function () {
-    var goomba= new Mine.Blocks.Block();
-    goomba.addClass(Mine.Blocks.Goomba);
+Mine.Things.Blocks. Goomba = function () {
+    var goomba= new Mine.Things.Blocks.Block();
+    goomba.addClass(Mine.Things.Blocks.Goomba);
     goomba.shape = Mine.Primatives.Square();
     goomba.setTexIndex([12, 14]);
     return goomba;
@@ -643,11 +644,11 @@ Mine.Blocks. Goomba = function () {
 
 
 //Hash map of the existing block types to ease importing scenes from files.
-Mine.Blocks.types = {
-    "air":Mine.Blocks.Air,
-    "grass":Mine.Blocks.Grass,
-    "brick":Mine.Blocks.Brick,
-    "goomba":Mine.Blocks.Goomba
+Mine.Things.Blocks.types = {
+    "air":Mine.Things.Blocks.Air,
+    "grass":Mine.Things.Blocks.Grass,
+    "brick":Mine.Things.Blocks.Brick,
+    "goomba":Mine.Things.Blocks.Goomba
 };
 
 
@@ -808,7 +809,7 @@ Mine.GLStage = function (id) {
         mat4.identity(glStage.mvMatrix);
         //Allow the camera to alter the mvMatrix;
         glStage.camera.changePerspective();
-        if (target && target.isA(Mine.Thing)) {
+        if (target && target.isA(Mine.Things.Thing)) {
             Mine.dm("Drawing a thing");
 
             //Move to where the shape should be drawn.
@@ -949,7 +950,7 @@ Mine.GLStage = function (id) {
     }
 
     Mine.stage = glStage;
-    glStage.setCamera(Mine.Camera());
+    glStage.setCamera(Mine.Things.Camera());
     return glStage;
 };
 
@@ -1015,9 +1016,9 @@ Mine.Texture.Cache = {};
 
 
 //Camera class
-Mine.Camera = function(){
-    var camera = Mine.Thing();
-    camera.addClass(Mine.Camera);
+Mine.Things.Camera = function(){
+    var camera = Mine.Things.Thing();
+    camera.addClass(Mine.Things.Camera);
     camera.drawMe(false);
     camera.stage = null;
 
@@ -1155,13 +1156,13 @@ $(document).ready(function () {
     var texture = Mine.Texture("terrain", 16, function (test) {
         stage.texture = test;
     });
-    var shape = Mine.Blocks.Brick();
+    var thing = Mine.Things.Blocks.Brick();
 
     //shape.shape.setColor(Mine.Colors.indigo);
     //shape.addRot([0.5, 0.0, 0.0]);
     //shape2.setTexIndex([8, 13]);
-    shape.setPos([0, -1, -10]);
-    shape.act = function () {
+    thing.setPos([0, -1, -10]);
+    thing.act = function () {
         //shape.movePos([0.1, 0, 0]);
     };
     stage.camera.addRot([0,0.0,0.1]);
@@ -1189,7 +1190,7 @@ $(document).ready(function () {
         //stage.camera.movePos([0.1, 0, 0]);
     }
 
-    stage.add(shape);
+    stage.add(thing);
 
     //Wait for the shader, then run the simulation.
     shader.waitFor(function () {
