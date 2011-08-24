@@ -1,4 +1,4 @@
-"use strict";
+//"use strict";
 
 var Mine = {};
 //Where resources are located.
@@ -48,7 +48,13 @@ Mine.Base = function () {
 
 
 
-    self.addClass(Mine.Base);
+    self.className = function () {
+        return self.classes[self.classes.length-1];
+    };
+
+
+
+    self.addClass("Mine.Base");
     return self;
 };
 
@@ -88,7 +94,7 @@ Mine.Colors = {
 //ShaderProgram class begin here. 
 Mine.ShaderProgram = function (shader_name) {
     var self = Mine.Base();
-    self.addClass(Mine.ShaderProgram);
+    self.addClass("Mine.ShaderProgram");
     var shader_location = Mine.RESOURCE_LOCATION+"/shaders/";
     self.loaded = false;
     self.failed = false;
@@ -201,7 +207,7 @@ Mine.Primatives = {};
 Mine.Primatives.Primative = function () {
     Mine.dm("Creating a primative");
     var self = Mine.Base();
-    self.addClass(Mine.Primatives.Primative);
+    self.addClass("Mine.Primatives.Primative");
     self.vertices = [];
     self.type = null;
     self.vertices = [];
@@ -252,7 +258,7 @@ Mine.Primatives.Primative = function () {
 //Triangle primative.
 Mine.Primatives.Triangle = function () {
     var self = Mine.Primatives.Primative();
-    self.addClass(Mine.Primatives.Triangle);
+    self.addClass("Mine.Primatives.Triangle");
     //Filling the vBuffer.
     self.vertices = [
         0.0, 1.0, 0.0,
@@ -276,7 +282,7 @@ Mine.Primatives.Triangle = function () {
 //Square primative.
 Mine.Primatives.Square = function () {
     var self = Mine.Primatives.Primative();
-    self.addClass(Mine.Primatives.Square);
+    self.addClass("Mine.Primatives.Square");
     self.vertices = [
         1.0, 1.0, 0.0,
         -1.0, 1.0, 0.0,
@@ -312,7 +318,7 @@ Mine.Primatives.Square = function () {
 //Cube primative.
 Mine.Primatives.Cube = function () {
     var self = Mine.Primatives.Primative();
-    self.addClass(Mine.Primatives.Cube);
+    self.addClass("Mine.Primatives.Cube");
     Mine.dm("Making a cube");
     Mine.Debug.printGLError();
     //The vertices are coming!
@@ -433,7 +439,7 @@ Mine.Primatives.Cube = function () {
 //Object with dimentions
 Mine.DimentionalObject = function () {
     var self = Mine.Base();
-    self.addClass(Mine.DimentionalObject);
+    self.addClass("Mine.DimentionalObject");
 
     self.position = [0, 0, 0];
     self.rotation = [0, 0, 0];
@@ -453,9 +459,7 @@ Mine.DimentionalObject = function () {
 
     //Sets the current position of the object to the vector given.
     self.setPos = function (new_pos) {
-        self.position[0] = new_pos[0];
-        self.position[1] = new_pos[1];
-        self.position[2] = new_pos[2];
+        self.position = new_pos.slice(0);
     };
 
 
@@ -481,7 +485,7 @@ Mine.DimentionalObject = function () {
 
     //Sets the current rotation of the objecto to the vector given.
     self.setRot = function (new_rot) {
-        self.rotation= new_rot;
+        self.rotation= new_rot.slice(0);
     };
     
 
@@ -511,7 +515,7 @@ Mine.DimentionalObject = function () {
 Mine.Things = {};
 Mine.Things.Thing = function () {
     var self = Mine.DimentionalObject();
-    self.addClass(Mine.Things.Thing);
+    self.addClass("Mine.Things.Thing");
     self.textureLocation = [0, 0];
     self.needsDrawing= false;
     self.shape = null;
@@ -558,7 +562,7 @@ Mine.BasicShapes = {};
 //Basic square shaped thing.
 Mine.BasicShapes.Square = function () {
     var self = Mine.Things.Thing();
-    self.addClass(Mine.BasicShapes.Square);
+    self.addClass("Mine.BasicShapes.Square");
     self.shape = Mine.Primatives.Square();
     return self;
 };
@@ -570,7 +574,7 @@ Mine.BasicShapes.Square = function () {
 //Basic cube shaped thing.
 Mine.BasicShapes.Cube = function () {
     var self = Mine.Things.Thing();
-    self.addClass(Mine.BasicShapes.Cube);
+    self.addClass("Mine.BasicShapes.Cube");
     if (!Mine.BasicShapes.Cube.cache) {
         Mine.BasicShapes.Cube.cache = Mine.Primatives.Cube();
     }
@@ -596,7 +600,7 @@ Mine.Things.Entities = {};
 
 Mine.Things.Entities.Entity = function () {
     var self = Mine.Things.Thing();
-    self.addClass(Mine.Things.Entities.Entity);
+    self.addClass("Mine.Things.Entities.Entity");
     return self;
 };
 
@@ -607,7 +611,7 @@ Mine.Things.Entities.Entity = function () {
 //Player class.
 Mine.Things.Entities.Player = function () {
     var self = Mine.Things.Entities.Entity();
-    self.addClass(Mine.Things.Entities.Player);
+    self.addClass("Mine.Things.Entities.Player");
 
     //The player is currently invisible.
     self.drawMe(false);
@@ -661,7 +665,7 @@ Mine.Things.Blocks = {};
 //Base block class.
 Mine.Things.Blocks.Block = function () {
     var self = new Mine.BasicShapes.Cube();
-    self.addClass(Mine.Things.Blocks.Block);
+    self.addClass("Mine.Things.Blocks.Block");
     return self;
 };
 
@@ -672,7 +676,7 @@ Mine.Things.Blocks.Block = function () {
 //Invisible "air" block.
 Mine.Things.Blocks.Air = function () {
     var self = new Mine.Things.Blocks.Block();
-    self.addClass(Mine.Things.Blocks.Air);
+    self.addClass("Mine.Things.Blocks.Air");
     self.drawMe(false);
     return self;
 };
@@ -683,7 +687,7 @@ Mine.Things.Blocks.Air = function () {
 //Grass block.
 Mine.Things.Blocks.Grass = function () {
     var self = new Mine.Things.Blocks.Block();
-    self.addClass(Mine.Things.Blocks.Grass);
+    self.addClass("Mine.Things.Blocks.Grass");
     self.setTexIndex([0, 15]);
     return self;
 };
@@ -694,7 +698,7 @@ Mine.Things.Blocks.Grass = function () {
 //Brick block.
 Mine.Things.Blocks.Brick= function () {
     var self = new Mine.Things.Blocks.Block();
-    self.addClass(Mine.Things.Blocks.Brick);
+    self.addClass("Mine.Things.Blocks.Brick");
     self.setTexIndex([8, 13]);
     return self;
 };
@@ -705,7 +709,7 @@ Mine.Things.Blocks.Brick= function () {
 //Goomba block.
 Mine.Things.Blocks. Goomba = function () {
     var self= new Mine.Things.Blocks.Block();
-    self.addClass(Mine.Things.Blocks.Goomba);
+    self.addClass("Mine.Things.Blocks.Goomba");
     self.shape = Mine.Primatives.Square();
     self.setTexIndex([12, 14]);
     return self;
@@ -728,12 +732,100 @@ Mine.Things.Blocks.types = {
 //Chunk class: stores a matrix of blocks that represent the world.
 Mine.Chunk = function(){
     var self = Mine.DimentionalObject();
-    self.addClass(Mine.Chunk);
+    var x, y, z;
+    self.addClass("Mine.Chunk");
+    self.grid = null;
+    self.unitSize = Mine.BasicShapes.Cube.size;
+
+    self.initGrid = function(){
+       self.grid = [];
+       for(x = 0; x < Mine.Chunk.G_WIDTH; x += 1){
+           self.grid[x] = [];
+           for(y = 0; y < Mine.Chunk.G_HEIGHT; y += 1){
+               self.grid[x][y] = [];
+               for(z = 0; z < Mine.Chunk.G_LENGTH; z += 1){
+                   var newBlock = Mine.Things.Blocks.Grass();
+                   var blocksPosition = self.position.slice(0);
+                   blocksPosition[0] += -(self.unitSize[0] * (Mine.Chunk.G_WIDTH/2))
+                       + (x * self.unitSize[0]);
+                   blocksPosition[1] += -(self.unitSize[1] * (Mine.Chunk.G_HEIGHT/2))
+                       + (y * self.unitSize[1]);
+                   blocksPosition[2] += -(self.unitSize[2] * (Mine.Chunk.G_LENGTH/2))
+                       + (z * self.unitSize[1]);
+                   newBlock.setPos(blocksPosition);
+                   newBlock.drawMe(false);
+                   self.grid[x][y][z] = newBlock;
+               }               
+                   //console.log("Position: "+blocksPosition);
+
+               }
+           }
+    };
+
+
+
+    self.getBlock = function (blockVector) {
+        if(!self.grid){
+            return null;
+        }
+
+        return self.grid[blockVector[0]][blockVector[1]][blockVector[2]];
+    };
+
+
+
+    self.setBlock = function (blockVector, newBlock) {
+        if(!self.grid){
+            return null;
+        }
+
+        self.grid[blockVector[0]][blockVector[1]][blockVector[2]] = newBlock;
+
+        return self.getBlock(blockVector);
+    }
+
+
+
+    self.act = function () {};
+
+
+
+    self.drawMe = function() {return true;};
+    self.draw = function () {
+        self.forEach(function (block) {
+            //console.log("Moo");
+            //console.log(block);
+            if(block.drawMe()){
+                self.stage.draw(block);
+            }
+            //console.log("Drawing: "+block.className());
+        });
+    };
+
+    self.forEach = function (callback) {
+        var x, y, z;
+
+        for(x = 0; x < Mine.Chunk.G_WIDTH; x += 1){
+            for(y = 0; y < Mine.Chunk.G_HEIGHT; y += 1){
+                for(z = 0; z < Mine.Chunk.G_LENGTH; z += 1){
+                    //console.log(self.grid);
+                    callback(self.grid[x][y][z]);
+                }
+            }
+        }
+
+    };
+
+
+
+    //console.log("Done");
+    self.initGrid();
     return self;
 };
 
-Mine.Chunk.G_WIDTH = 16;
-Mine.Chunk.G_LENGTH = 16;
+
+Mine.Chunk.G_WIDTH = 5;
+Mine.Chunk.G_LENGTH = 5;
 Mine.Chunk.G_HEIGHT = 5;
 
 
@@ -744,7 +836,7 @@ Mine.Chunk.G_HEIGHT = 5;
 Mine.GLStage = function (id) {
     var self = Mine.Base();
     var i;
-    self.addClass(Mine.Gl_stage);
+    self.addClass("Mine.Gl_stage");
 
     //Fields
     self.canvas = null;
@@ -897,7 +989,11 @@ Mine.GLStage = function (id) {
         //Allow the camera to alter the mvMatrix;
         self.camera.changePerspective();
 
-        if (target && target.isA(Mine.Things.Thing)) {
+        if(target && target.isA("Mine.Chunk")){
+            //console.log("I know this is a chunk :)");
+            target.draw();
+        }
+        else if (target && target.isA("Mine.Things.Thing")) {
             Mine.dm("Drawing a thing");
 
             //Move to where the shape should be drawn.
@@ -1049,7 +1145,7 @@ Mine.GLStage = function (id) {
 //Creates and caches texture objects from names.
 Mine.Texture = function (texture_name, devisions, callback) {
     var self = Mine.Base();
-    self.addClass(Mine.Texture);
+    self.addClass("Mine.Texture");
     self.devisions = devisions;
     Mine.dm("Creating a texture");
     //Check the cache first!.
@@ -1106,7 +1202,7 @@ Mine.Texture.Cache = {};
 //Camera class
 Mine.Things.Camera = function(){
     var self = Mine.Things.Thing();
-    self.addClass(Mine.Things.Camera);
+    self.addClass("Mine.Things.Camera");
     self.drawMe(false);
     self.stage = null;
 
@@ -1182,7 +1278,7 @@ Mine.dm = function (message) {
 //Handles keyboard input hooking.
 Mine.Keys = function () {
     var self = Mine.Base();
-    self.addClass(Mine.Keys);
+    self.addClass("Mine.Keys");
 
     self.state = {};
 
@@ -1244,6 +1340,8 @@ $(document).ready(function () {
     var texture = Mine.Texture("terrain", 16, function (test) {
         stage.texture = test;
     });
+    chunk = Mine.Chunk();
+    stage.add(chunk);
     var thing = Mine.Things.Blocks.Brick();
 
     //shape.shape.setColor(Mine.Colors.indigo);
