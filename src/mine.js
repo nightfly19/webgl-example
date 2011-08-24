@@ -1100,11 +1100,9 @@ Mine.Keys = function () {
 
         //On key down events.
         $(document).keydown(function(e){
-            console.log("Key has been pressed: "+e.keyCode);
             var key = Mine.Keys.IMPORTANT_KEYS[e.keyCode];
             if(key){
                 keys.state[key] = true;
-                console.log(Mine.Keys.IMPORTANT_KEYS[e.keyCode]);
                 return false;
             }
 
@@ -1117,7 +1115,6 @@ Mine.Keys = function () {
             var key = Mine.Keys.IMPORTANT_KEYS[e.keyCode];
             if(key){
                 keys.state[key] = false;
-                console.log(Mine.Keys.IMPORTANT_KEYS[e.keyCode]);
                 return false;
             }
             return true;
