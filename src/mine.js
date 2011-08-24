@@ -575,6 +575,12 @@ Mine.BasicShapes.Cube.cache = null;
 
 
 
+//Mine.Player
+
+
+
+
+
 //Block type things (they are cube shaped.)
 Mine.Blocks = {};
 
@@ -649,6 +655,7 @@ Mine.Blocks.types = {
 //Stage class, also where the GL context is stored.
 Mine.GLStage = function (id) {
     var glStage = Mine.Base();
+    var i;
     glStage.addClass(Mine.Gl_stage);
 
     //Fields
@@ -663,6 +670,8 @@ Mine.GLStage = function (id) {
     //glStage.bgColor = Mine.Colors.black;
     glStage.fps = 1000/30;
     glStage.interval = null;
+    //keyboard state info.
+    glStage.keys = Mine.Keys()    
     //Get the canvas.
     glStage.canvas = document.getElementById(id);
     //Try and initialize WebGL.
@@ -698,7 +707,7 @@ Mine.GLStage = function (id) {
         //Mine.Debug.printGLError();
         //glStage.gl.enableVertexAttribArray(glStage.program.vertexColorAttribute);
         //Mine.Debug.printGLError();
-        
+
         //Vertex texture coord
         Mine.dm("So I can get aTextureCoord?");
         glStage.program.textureCoordAttribute = glStage.gl.getAttribLocation(glStage.program, "aTextureCoord");
@@ -729,6 +738,14 @@ Mine.GLStage = function (id) {
 
 
 
+    //Sets the current camera.
+    glStage.setCamera = function(newCamera){
+        glStage.camera = newCamera;
+        newCamera.stage = glStage;
+    };
+
+
+
     //Clear the stage.
     glStage.clear = function () {
         Mine.dm("Clear the stage");
@@ -750,11 +767,47 @@ Mine.GLStage = function (id) {
 
 
 
+    //Key input bits.
+    //Hook keys
+    glStage.hookKeys = function(){
+        var importantKeys = [13, 32, 65, 68, 83, 87];
+        var i;
+
+        var checkImportant = function(keyCode){
+            console.log(keyCode);
+            for(i = 0; i < importantKeys.length; i+=1){
+                if(keyCode == importantKeys[i]){
+                    //console.log("Moo");
+                    return false;
+                }
+            }
+
+            //console.log("Boo");
+            return true;
+        };
+
+        $(document).keydown(function(e){
+            //console.log("Key has been pressed: "+e.keyCode);
+            glStage.keys[e.keyCode] = true;
+            return checkImportant(e.keyCode);
+        });
+
+        $(document).keyup(function(e){
+            //console.log("Key has been released: "+e.keyCode);
+            glStage.keys[e.keyCode] = false;
+            return checkImportant(e.keyCode);
+        });
+
+    };
+
+
     //Draw the stage.
     glStage.draw = function (target) {
         Mine.dm("Drawing something");
         //Reset the move matrix.
         mat4.identity(glStage.mvMatrix);
+        //Allow the camera to alter the mvMatrix;
+        glStage.camera.changePerspective();
         if (target && target.isA(Mine.Thing)) {
             Mine.dm("Drawing a thing");
 
@@ -844,11 +897,16 @@ Mine.GLStage = function (id) {
         Mine.Debug.printGLError();
         Mine.stage.gl.enable(Mine.stage.gl.DEPTH_TEST);
         Mine.Debug.printGLError();
+
         mat4.perspective(45, glStage.gl.viewportWidth / glStage.gl.viewportHeight, 0.1, 100.0, glStage.pMatrix);
         Mine.Debug.printGLError();
         glStage.interval = setInterval(function () {
             var actor;
             glStage.clear();
+
+            //The camera is special so it acts here, outside normal loop.
+            glStage.camera.act();
+
             Mine.dm("Begining acting loop.");
             for(actor in glStage.actors) {
                 if(glStage.actors.hasOwnProperty(actor)){
@@ -881,7 +939,7 @@ Mine.GLStage = function (id) {
     //Constructor stuff.
     if (glStage.gl) {
         //glStage.clear();
-        
+        glStage.keys.hookKeys();
         //Sets the viewport to the current size of the canvas element.
         glStage.gl.viewportWidth = glStage.canvas.width;
         glStage.gl.viewportHeight = glStage.canvas.height;
@@ -891,6 +949,7 @@ Mine.GLStage = function (id) {
     }
 
     Mine.stage = glStage;
+    glStage.setCamera(Mine.Camera());
     return glStage;
 };
 
@@ -954,6 +1013,39 @@ Mine.Texture.Cache = {};
 
 
 
+
+//Camera class
+Mine.Camera = function(){
+    var camera = Mine.Thing();
+    camera.addClass(Mine.Camera);
+    camera.drawMe(false);
+    camera.stage = null;
+
+    //Change the mvMatrix to reflect the position of the camera.
+    camera.changePerspective = function(){
+        if(camera.stage === null){
+            return;
+        }
+        mat4.rotate(camera.stage.mvMatrix, -camera.rotation[0],[1,0,0]);
+        mat4.rotate(camera.stage.mvMatrix, -camera.rotation[1],[0,1,0]);
+        mat4.rotate(camera.stage.mvMatrix, -camera.rotation[2],[0,0,1]);
+        mat4.translate(camera.stage.mvMatrix, [
+                -camera.position[0],
+                -camera.position[1],
+                -camera.position[2]
+                ]);
+
+    };
+
+
+
+    return camera;
+};
+
+
+
+
+
 //Defines debugging functions and properties for the Mine framework.
 Mine.Debug = {};
 //Holds weither debugging is enabled or not.
@@ -996,15 +1088,71 @@ Mine.dm = function (message) {
 
 
 
+
+
+//Handles keyboard input hooking.
+Mine.Keys = function () {
+    var keys = Mine.Base();
+
+    keys.state = {};
+
+    keys.hookKeys = function () {
+
+        //On key down events.
+        $(document).keydown(function(e){
+            console.log("Key has been pressed: "+e.keyCode);
+            var key = Mine.Keys.IMPORTANT_KEYS[e.keyCode];
+            if(key){
+                keys.state[key] = true;
+                console.log(Mine.Keys.IMPORTANT_KEYS[e.keyCode]);
+                return false;
+            }
+
+            return true;
+        });
+
+        //On key upevents.
+        $(document).keyup(function(e){
+            //console.log("Key has been released: "+e.keyCode);
+            var key = Mine.Keys.IMPORTANT_KEYS[e.keyCode];
+            if(key){
+                keys.state[key] = false;
+                console.log(Mine.Keys.IMPORTANT_KEYS[e.keyCode]);
+                return false;
+            }
+            return true;
+        });
+
+    };
+    keys.addClass(Mine.Keys);
+
+    return keys;
+};
+
+Mine.Keys.IMPORTANT_KEYS = {
+    13:"ENTER", 
+    32:"SPACE", 
+    65:"A", 
+    68:"D", 
+    83:"S",
+    87:"W"
+};
+
+
+
+
+
 // "Main" function :)
 $(document).ready(function () {
     Mine.Debug.debug = false;
 
     //Create the WebGL stage.
     var stage = Mine.GLStage("minedotjs");
+    //Hook keyboard input.
+    //stage.keys = Mine.Keys();
+    //stage.keys.hookKeys();
     var shader = Mine.ShaderProgram("textured");
 
-   
     //Loads the texture.
     Mine.dm("Creating a texture");
     var texture = Mine.Texture("terrain", 16, function (test) {
@@ -1019,6 +1167,31 @@ $(document).ready(function () {
     shape.act = function () {
         //shape.movePos([0.1, 0, 0]);
     };
+    stage.camera.addRot([0,0.0,0.1]);
+
+    stage.camera.act = function () {
+        var up, down, left, right;
+        up = (stage.keys.state.W && !stage.keys.state.S) ? true : false;
+        down = (!stage.keys.state.W && stage.keys.state.S) ? true : false;
+        left = (stage.keys.state.A && !stage.keys.state.D) ? true : false;
+        right = (!stage.keys.state.A && stage.keys.state.D) ? true : false;
+
+        var speed = 0.1;
+        if(up){
+            stage.camera.movePos([0, 0, -speed]);
+        };
+        if(left){
+            stage.camera.movePos([-speed, 0, 0]);
+        };
+        if(down){
+            stage.camera.movePos([0, 0, speed]);
+        };
+        if(right){
+            stage.camera.movePos([speed, 0, 0]);
+        };
+        //stage.camera.movePos([0.1, 0, 0]);
+    }
+
     stage.add(shape);
 
     //Wait for the shader, then run the simulation.
@@ -1035,5 +1208,5 @@ $(document).ready(function () {
     setTimeout(function () {
         stage.end();
         Mine.dm("Stoping the stage.");
-    }, 5000);
+    }, 500000);
 });
