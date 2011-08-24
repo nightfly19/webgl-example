@@ -452,7 +452,7 @@ Mine.Thing = function () {
 
     //Reports if this object needs to be drawn if called with no arguments. If arguments are supplied sets needsDrawing to the boolean value of the given argument and returns the new value.
     thing.drawMe = function (change) {
-        if (change !== null) {
+        if (change != null) {
             thing.needsDrawing = !!change;
         }
         return thing.needsDrawing;
