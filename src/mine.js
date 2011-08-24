@@ -666,33 +666,39 @@ Mine.GLStage = function (id) {
     //Get the canvas.
     glStage.canvas = document.getElementById(id);
     //Try and initialize WebGL.
-    //try{
-    Mine.dm("Initializing webgl");
-    glStage.gl = glStage.canvas.getContext("experimental-webgl");
-    Mine.stage = glStage;
-    WebGLDebugUtils.init(Mine.stage.gl);
-    Mine.Debug.printGLError();
-    //}
-    //catch(e) {
-    //  Mine.dm("Failed to initialize webgl");
-    //  Mine.dm(e)
-    //}
+    try{
+        Mine.dm("Initializing webgl");
+        glStage.gl = glStage.canvas.getContext("experimental-webgl");
+        Mine.stage = glStage;
+        WebGLDebugUtils.init(Mine.stage.gl);
+        Mine.Debug.printGLError();
+    }
+    catch(e) {
+        Mine.dm("Failed to initialize webgl");
+        Mine.dm(e)
+    }
+
+
+
     //Set the current shader program.
     glStage.setProgram = function (active_program) {
         Mine.dm("Setting shader");
         glStage.program = active_program.program;
         glStage.gl.useProgram(active_program.program);
         Mine.Debug.printGLError();
+
         //Vertex position.
         glStage.program.vertexPositionAttribute = glStage.gl.getAttribLocation(glStage.program, "aVertexPosition");
         Mine.Debug.printGLError();
         glStage.gl.enableVertexAttribArray(glStage.program.vertexPositionAttribute);
         Mine.Debug.printGLError();
+
         //Vertex color.
         //glStage.program.vertexColorAttribute = glStage.gl.getAttribLocation(glStage.program, "aVertexColor");
         //Mine.Debug.printGLError();
         //glStage.gl.enableVertexAttribArray(glStage.program.vertexColorAttribute);
         //Mine.Debug.printGLError();
+        
         //Vertex texture coord
         Mine.dm("So I can get aTextureCoord?");
         glStage.program.textureCoordAttribute = glStage.gl.getAttribLocation(glStage.program, "aTextureCoord");
@@ -741,67 +747,85 @@ Mine.GLStage = function (id) {
         Mine.Debug.printGLError();
         Mine.dm("Cleared the stage");
     };
+
+
+
+    //Draw the stage.
     glStage.draw = function (target) {
         Mine.dm("Drawing something");
         //Reset the move matrix.
         mat4.identity(glStage.mvMatrix);
         if (target && target.isA(Mine.Thing)) {
-            //Mine.dm("Drawing a thing");
+            Mine.dm("Drawing a thing");
+
+            //Move to where the shape should be drawn.
             mat4.translate(glStage.mvMatrix, target.getPos());
+
+            //Apply the shapes rotation.
             mat4.rotate(glStage.mvMatrix, target.getRot()[0], [1, 0, 0]);
             mat4.rotate(glStage.mvMatrix, target.getRot()[1], [0, 1, 0]);
             mat4.rotate(glStage.mvMatrix, target.getRot()[2], [0, 0, 1]);
-            //Vvertex.
+
+            //Bind the Vertex buffer
             Mine.stage.gl.bindBuffer(Mine.stage.gl.ARRAY_BUFFER, target.shape.vBuffer);
             Mine.stage.gl.vertexAttribPointer(glStage.program.vertexPositionAttribute, target.shape.vSize, Mine.stage.gl.FLOAT, false, 0, 0);
-            //Colors.
+
+            //Bind the color buffer.
             //Mine.stage.gl.bindBuffer(Mine.stage.gl.ARRAY_BUFFER, target.shape.cBuffer);
             //Mine.Debug.printGLError();
             //Mine.stage.gl.vertexAttribPointer(glStage.program.vertexColorAttribute, target.shape.cSize, Mine.stage.gl.FLOAT, false, 0, 0);
             //Mine.Debug.printGLError();
-            //Texture stuff :)
-            //Mine.dm("Using texture: "+target.texture);
-            //Mine.dm("Using gltexture: "+target.texture.glTexture);
-            //Mine.dm( target.shape.tcBuffer);
-            //Mine.dm( target.shape.tcSize);
+
+            //Bind the texture coordinate buffer.
+            Mine.dm("Using texture: "+target.texture);
             Mine.stage.gl.bindBuffer(Mine.stage.gl.ARRAY_BUFFER, target.shape.tcBuffer);
             Mine.Debug.printGLError();
             Mine.stage.gl.vertexAttribPointer(glStage.program.textureCoordAttribute, target.shape.tcSize, Mine.stage.gl.FLOAT, false, 0, 0);
             Mine.Debug.printGLError();
+
+            //Set the current and active texture and bind the texture buffer.
             Mine.stage.gl.activeTexture(Mine.stage.gl.TEXTURE0);
             Mine.Debug.printGLError();
             Mine.stage.gl.bindTexture(Mine.stage.gl.TEXTURE_2D, glStage.texture.glTexture);
             Mine.Debug.printGLError();
             Mine.stage.gl.uniform1i(glStage.program.samplerUniform, 0);
             Mine.Debug.printGLError();
-            //Set the texture coordinates.
+
+            //Sets the mvMatrix and pMatrix uniforms.
             glStage.setUniforms();
+
+            //Create matrix that will hold the texture indexes. This is inefficent and needs to be done differently.
             var test = mat4.create();
             test[0] = glStage.texture.devisions;
             test[1] = target.textureLocation[0];
             test[2] = target.textureLocation[1];
-            //Mine.dm("Fucker: "+glStage.program.textureLocation);
+            Mine.dm("TextureLocation: "+glStage.program.textureLocation);
             glStage.gl.uniformMatrix4fv(glStage.program.textureLocation, false, test);
+            Mine.Debug.printGLError();
+
             //Draw the shape.
             if (target.shape.type === "TRIANGLE_STRIP") {
-                glStage.setUniforms();
+                Mine.dm("Drawing triangle strip");
                 Mine.stage.gl.drawArrays(Mine.stage.gl.TRIANGLE_STRIP, 0, target.shape.vCount);
                 Mine.Debug.printGLError();
             }
             else if (target.shape.type === "ELEMENTS_TRIANGLES") {
-                //Mine.dm("Drawing elements");
-                //Indexes
+                Mine.dm("Drawing elements");
                 Mine.stage.gl.bindBuffer(Mine.stage.gl.ELEMENT_ARRAY_BUFFER, target.shape.iBuffer);
                 Mine.Debug.printGLError();
                 Mine.stage.gl.drawElements(Mine.stage.gl.TRIANGLES, target.shape.iCount, Mine.stage.gl.UNSIGNED_SHORT, 0);
                 Mine.Debug.printGLError();
             }
             else {
-                Mine.dm("Not known type...");
+                Mine.dm("Not known type, not drawing.");
             }
         }
         Mine.dm("Drew something");
     };
+
+
+
+    //Addes an object to the stages collection.
     glStage.add = function (new_actor) {
         glStage.actors.push(new_actor);
         new_actor.stage = glStage;
@@ -809,13 +833,15 @@ Mine.GLStage = function (id) {
 
 
 
+    //Runs the simulation.
     glStage.run = function () {
         if (glStage.interval) {
             return;
         }
-        Mine.stage.gl.clearColor(0.0, 1.0, 0.0, 1.0);
-        Mine.Debug.printGLError();
+        //Mine.stage.gl.clearColor(0.0, 1.0, 0.0, 1.0);
+        //Mine.Debug.printGLError();
         Mine.stage.gl.enable(Mine.stage.gl.BLEND);
+        Mine.Debug.printGLError();
         Mine.stage.gl.enable(Mine.stage.gl.DEPTH_TEST);
         Mine.Debug.printGLError();
         mat4.perspective(45, glStage.gl.viewportWidth / glStage.gl.viewportHeight, 0.1, 100.0, glStage.pMatrix);
@@ -823,13 +849,15 @@ Mine.GLStage = function (id) {
         glStage.interval = setInterval(function () {
             var actor;
             glStage.clear();
-            //Mine.dm("Hello");
+            Mine.dm("Begining acting loop.");
             for(actor in glStage.actors) {
                 if(glStage.actors.hasOwnProperty(actor)){
                     glStage.actors[actor].act();
                     //Mine.dm("\tMoo");
                 }
             }
+
+            Mine.dm("Begining drawing loop.");
             for(actor in glStage.actors) {
                 if(glStage.actors.hasOwnProperty(actor)){
                     if (glStage.actors[actor].drawMe()) {
@@ -842,6 +870,7 @@ Mine.GLStage = function (id) {
 
 
 
+    //Stops the simulation if it is currently running after the current tick.
     glStage.end = function () {
         clearInterval(glStage.interval);
         glStage.interval = null;
@@ -852,12 +881,15 @@ Mine.GLStage = function (id) {
     //Constructor stuff.
     if (glStage.gl) {
         //glStage.clear();
+        
+        //Sets the viewport to the current size of the canvas element.
         glStage.gl.viewportWidth = glStage.canvas.width;
         glStage.gl.viewportHeight = glStage.canvas.height;
     }
     else {
         Mine.dm("Failed somehow");
     }
+
     Mine.stage = glStage;
     return glStage;
 };
@@ -866,6 +898,7 @@ Mine.GLStage = function (id) {
 
 
 
+//Creates and caches texture objects from names.
 Mine.Texture = function (texture_name, devisions, callback) {
     var texture = Mine.Base();
     texture.addClass(Mine.Texture);
@@ -876,9 +909,13 @@ Mine.Texture = function (texture_name, devisions, callback) {
         Mine.dm("Found it?");
         return Mine.Texture.Cache[texture_name];
     }
+
     texture.glTexture = Mine.stage.gl.createTexture();
     Mine.Debug.printGLError();
+
     texture.image = new Image();
+
+    //This callback handles loading the texture into a WebGL buffer.
     texture.image.onload = function () {
         Mine.stage.gl.bindTexture(Mine.stage.gl.TEXTURE_2D, texture.glTexture);
         Mine.Debug.printGLError();
@@ -904,16 +941,26 @@ Mine.Texture = function (texture_name, devisions, callback) {
             callback(texture);
         }
     };
-    //texture.image.src = "http://localhost/~sage/minedotjs/resources/textures/kitten.png";
+
+    //Sets the images source (triggers loading the texture).
     texture.image.src = Mine.Texture.TEXTURE_LOCATION+texture_name+".png";
-    //Mine.dm(texture.image.src);
+
     return texture;
 };
+
 Mine.Texture.TEXTURE_LOCATION = Mine.RESOURCE_LOCATION+"/textures/";
 Mine.Texture.Cache = {};
+
+
+
+
+//Defines debugging functions and properties for the Mine framework.
 Mine.Debug = {};
-Mine.Debug.debug = true;
-//Mine.Debug.debug = false;
+//Holds weither debugging is enabled or not.
+Mine.Debug.debug = false;
+
+
+//Checks to see if the last WebGL opperation was successful, if not prints error information.
 Mine.Debug.printGLError = function (force) {
     if (!Mine.Debug.debug && !force) {
         return;
@@ -933,9 +980,13 @@ Mine.Debug.printGLError = function (force) {
     if (force || error !== 0) {
         Mine.dm("Checking for errors "+(temp.split("\n")[4]));
         Mine.dm("\t"+error);
-        //Mine.dm("\t"+WebGLDebugUtils.glEnumToString(error));
+        Mine.dm("\t"+WebGLDebugUtils.glEnumToString(error));
     }
 };
+
+
+
+//Causes a message to be printed if debugging is enabled.
 Mine.dm = function (message) {
     if (!Mine.Debug.debug) {
         return;
@@ -947,31 +998,39 @@ Mine.dm = function (message) {
 
 // "Main" function :)
 $(document).ready(function () {
+    Mine.Debug.debug = false;
+
     //Create the WebGL stage.
     var stage = Mine.GLStage("minedotjs");
     var shader = Mine.ShaderProgram("textured");
-    var shape = Mine.Blocks.Brick();
-    //shape.drawMe(false);
+
+   
+    //Loads the texture.
     Mine.dm("Creating a texture");
     var texture = Mine.Texture("terrain", 16, function (test) {
         stage.texture = test;
     });
-    Mine.Debug.printGLError();
-    shape.shape.setColor(Mine.Colors.indigo);
+    var shape = Mine.Blocks.Brick();
+
+    //shape.shape.setColor(Mine.Colors.indigo);
     //shape.addRot([0.5, 0.0, 0.0]);
-    shape.setPos([0, -1, -10]);
     //shape2.setTexIndex([8, 13]);
+    shape.setPos([0, -1, -10]);
     shape.act = function () {
         //shape.movePos([0.1, 0, 0]);
     };
     stage.add(shape);
-    //Run the simulation.
+
+    //Wait for the shader, then run the simulation.
     shader.waitFor(function () {
         stage.setProgram(shader);
+
+        //Wait 0.1 seconds before running (not sure why anymore).
         setTimeout(function () {
             stage.run();
         }, 100);
     });
+
     //Stop the simulation after 5 seconds.
     setTimeout(function () {
         stage.end();
