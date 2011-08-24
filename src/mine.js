@@ -439,8 +439,9 @@ Mine.Things.Thing = function () {
     self.rotation = [0, 0, 0];
     self.size = [0, 0, 0];
     self.textureLocation = [0, 0];
-    self.needsDrawing= true;
+    self.needsDrawing= false;
     self.shape = null;
+    self.collides = false;
 
 
 
@@ -554,7 +555,7 @@ Mine.BasicShapes.Square = function () {
 
 
 //Basic cube shaped thing.
-Mine.BasicShapes.Cube= function () {
+Mine.BasicShapes.Cube = function () {
     var self = Mine.Things.Thing();
     self.addClass(Mine.BasicShapes.Cube);
     if (!Mine.BasicShapes.Cube.cache) {
@@ -562,6 +563,7 @@ Mine.BasicShapes.Cube= function () {
     }
     self.shape = Mine.BasicShapes.Cube.cache;
     self.size = Mine.BasicShapes.Cube.size;
+    self.drawMe(true);
     return self;
 };
 //End basic shapes.
@@ -694,6 +696,17 @@ Mine.Things.Blocks.types = {
     "brick":Mine.Things.Blocks.Brick,
     "goomba":Mine.Things.Blocks.Goomba
 };
+
+
+
+
+//Chunk class: stores a matrix of blocks that represent the world.
+Mine.Chunk = function(){
+    var self = Mine.base();
+    self.addClass(Mine.Chunk);
+}
+
+
 
 
 
